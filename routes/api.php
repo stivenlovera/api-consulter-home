@@ -1,0 +1,95 @@
+<?php
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EnlaceController;
+use App\Http\Controllers\PostulantesController;
+use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\CargoController;
+use App\Http\Controllers\EvaluacionController;
+use App\Http\Controllers\EvaluadorController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
+ */
+
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+/*redirrecion de errores */
+Route::get('/error',
+    function (Request $request) {
+        return response()->json([
+            'status' => 0,
+            'message' => 'no autorizado',
+            'data' => null,
+        ], 401);
+    })->name('error');
+
+/*rutas libres */
+Route::prefix('/auth')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/redirect', [PostulantesController::class, 'index']);
+});
+
+/*rutas protegidas */
+Route::middleware(['auth:sanctum'])->group(function () {
+
+    Route::get('/auth', [AuthController::class, 'index']);
+
+    Route::prefix('home')->group(function () {
+        Route::get('/', [HomeController::class, 'index']);
+    });
+
+    Route::prefix('empresa')->group(function () {
+        Route::get('/', [EmpresaController::class, 'index']);
+        Route::post('/', [EmpresaController::class, 'store']);
+        Route::get('editar/{id}', [EmpresaController::class, 'edit']);
+        Route::put('/{id}', [EmpresaController::class, 'update']);
+        Route::delete('/{id}', [EmpresaController::class, 'destroy']);
+    });
+    Route::prefix('cargo')->group(function () {
+        Route::get('/', [CargoController::class, 'index']);
+        Route::post('/', [CargoController::class, 'store']);
+        Route::get('editar/{id}', [CargoController::class, 'edit']);
+        Route::put('/{id}', [CargoController::class, 'update']);
+        Route::delete('/{id}', [CargoController::class, 'destroy']);
+    });
+    Route::prefix('postulantes')->group(function () {
+        Route::get('/', [PostulantesController::class, 'index']);
+        Route::post('/', [PostulantesController::class, 'store']);
+        Route::get('editar/{id}', [PostulantesController::class, 'edit']);
+        Route::put('/{id}', [PostulantesController::class, 'update']);
+        Route::delete('/{id}', [PostulantesController::class, 'destroy']);
+    });
+    Route::prefix('evaluaciones')->group(function () {
+        Route::get('/', [EvaluacionController::class, 'index']);
+        Route::post('/', [EvaluacionController::class, 'store']);
+        Route::get('editar/{id}', [EvaluacionController::class, 'edit']);
+        Route::put('/{id}', [EvaluacionController::class, 'update']);
+        Route::delete('/{id}', [EvaluacionController::class, 'destroy']);
+    });
+    Route::prefix('enlace')->group(function () {
+        Route::get('/', [EnlaceController::class, 'index']);
+        Route::post('/', [EnlaceController::class, 'store']);
+        Route::get('/{id}', [EnlaceController::class, 'show']);
+        Route::put('/{id}', [EnlaceController::class, 'update']);
+    });
+    Route::prefix('evaluador')->group(function () {
+        Route::get('/', [EvaluadorController::class, 'index']);
+        Route::get('/create', [EvaluadorController::class, 'create']);
+        Route::post('/', [EvaluadorController::class, 'store']);
+        Route::get('editar/{id}', [EvaluadorController::class, 'edit']);
+        Route::put('/{id}', [EvaluadorController::class, 'update']);
+        Route::delete('/{id}', [EvaluadorController::class, 'destroy']);
+    });
+});

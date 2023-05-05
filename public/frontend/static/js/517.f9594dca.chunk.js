@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkcomisionesweb=self.webpackChunkcomisionesweb||[]).push([[517],{26517:function(e,n,s){s.r(n);var c=s(80184);n.default=function(){return(0,c.jsx)(c.Fragment,{children:(0,c.jsx)("h5",{children:"Vendedores"})})}}}]);
+//# sourceMappingURL=517.f9594dca.chunk.js.map

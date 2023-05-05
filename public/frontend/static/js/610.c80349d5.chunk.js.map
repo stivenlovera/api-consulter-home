@@ -1,0 +1,1 @@
+{"version":3,"file":"static/js/610.c80349d5.chunk.js","mappings":"0IAUA,UANgB,WACZ,OAAQ,+BACJ,wBAAI,cAEZ,C","sources":["Pages/Ascenso/Ascenso.tsx"],"sourcesContent":["interface TopVendedoresProps {\r\n\r\n}\r\n\r\nconst Ascenso = () => {\r\n    return (<>\r\n        <h5>Ascensos</h5>\r\n    </>);\r\n}\r\n\r\nexport default Ascenso;"],"names":[],"sourceRoot":""}

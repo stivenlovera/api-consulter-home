@@ -1,0 +1,1 @@
+{"version":3,"file":"static/js/517.f9594dca.chunk.js","mappings":"0IAUA,UANmB,WACf,OAAQ,+BACJ,wBAAI,gBAEZ,C","sources":["Pages/Vendedores/Vendedores.tsx"],"sourcesContent":["interface TopVendedoresProps {\r\n\r\n}\r\n\r\nconst Vendedores = () => {\r\n    return (<>\r\n        <h5>Vendedores</h5>\r\n    </>);\r\n}\r\n\r\nexport default Vendedores;"],"names":[],"sourceRoot":""}

@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkcomisionesweb=self.webpackChunkcomisionesweb||[]).push([[242],{98242:function(e,n,s){s.r(n);var i=s(80184);n.default=function(){return(0,i.jsx)(i.Fragment,{children:(0,i.jsx)("h5",{children:"Top Venta y Residules"})})}}}]);
+//# sourceMappingURL=242.c9a4e129.chunk.js.map
