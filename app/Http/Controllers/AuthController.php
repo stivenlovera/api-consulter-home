@@ -3,40 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
 use DB;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
 
     public function login(Request $request)
     {
-        try {
-            $user = User::where('usuario', $request->usuario)->where('password', $request->password)->first();
-            if ($user) {
-                $token = $user->createToken($user)->plainTextToken;
-                return response([
-                    'status' => 1,
-                    'message' => 'Iniciado correctamente',
-                    'data' => [
-                        'token' => $token,
-                    ],
-                ], 200);
-            } else {
-                return response([
-                    'status' => 0,
-                    'message' => 'Credenciales no validas',
-                    'data' => null,
-                ], 200);
-            }
 
-        } catch (\Throwable $th) {
+        $user = User::where('usuario', $request->usuario)->where('password', $request->password)->first();
+        if ($user) {
+            $token = $user->createToken($user)->plainTextToken;
+            return response([
+                'status' => 1,
+                'message' => 'Iniciado correctamente',
+                'data' => [
+                    'token' => $token,
+                ],
+            ], 200);
+        } else {
             return response([
                 'status' => 0,
-                'message' => 'A ocurrido un error',
+                'message' => 'Credenciales no validas',
                 'data' => null,
             ], 200);
         }
+
     }
 
     /**
@@ -48,7 +41,7 @@ class AuthController extends Controller
     {
         try {
             if ($request->user()) {
-                $persona = DB::table('persona')->where('persona_id', $request->user()->persona_id)->first();
+                $persona = DB::table('postulante')->where('postulante_id', $request->user()->postulante_id)->first();
                 return response([
                     'status' => 1,
                     'message' => 'Iniciado correctamente',
@@ -73,7 +66,49 @@ class AuthController extends Controller
             ], 200);
         }
     }
+    public function indexEvaluador(Request $request)
+    {
+        try {
+            if ($request->user()) {
+                $validarHabilitado = DB::table('postulante_evaluacion')
+                    ->where('postulante_id', $request->user()->postulante_id)
+                    ->where('estado_evaluacion_postulante_id', 2)
+                    ->first();
 
+                if ($validarHabilitado) {
+                    $persona = DB::table('postulante')->where('postulante_id', $request->user()->postulante_id)->first();
+                    return response([
+                        'status' => 1,
+                        'message' => 'Iniciado correctamente',
+                        'data' => [
+                            'nombreCompleto' => "$persona->nombre $persona->apellidos",
+                            'perfil' => '',
+                            'modulos' => [],
+                        ],
+                    ], 200);
+                } else {
+                    return response([
+                        'status' => 0,
+                        'message' => 'Credenciales no validas',
+                        'data' => null,
+                    ], 200);
+                }
+
+            } else {
+                return response([
+                    'status' => 0,
+                    'message' => 'Credenciales no validas',
+                    'data' => null,
+                ], 200);
+            }
+        } catch (\Throwable $th) {
+            return response([
+                'status' => 0,
+                'message' => 'A ocurrido un error',
+                'data' => null,
+            ], 200);
+        }
+    }
     /**
      * Show the form for creating a new resource.
      *

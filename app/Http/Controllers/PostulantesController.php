@@ -16,8 +16,11 @@ class postulantesController extends Controller
     {
         $listapostulantes = DB::table('postulante')->select(
             'postulante.*',
+            'estadopostulante.nombreEstadoPostulante',
             DB::raw("DATE_FORMAT(postulante.fecha_nacimiento,'%Y-%m-%d') AS fecha_nacimiento")
-        )->get();
+        )
+            ->join('estadopostulante', 'estadopostulante.estadoPostulante_id', 'postulante.estadoPostulanteId')
+            ->get();
         return response()->json([
             'status' => 1,
             'message' => 'prueba',
@@ -34,7 +37,16 @@ class postulantesController extends Controller
      */
     public function create()
     {
-        //
+        $estadoCiviles = DB::table('estadocivil')->get();
+        $estadoPostulantes = DB::table('estadopostulante')->get();
+        return response()->json([
+            'status' => 1,
+            'message' => 'Registrado correctamente',
+            'data' => [
+                'estadoCiviles' => $estadoCiviles,
+                'estadoPostulantes' => $estadoPostulantes,
+            ],
+        ], 200);
     }
 
     /**
@@ -52,23 +64,21 @@ class postulantesController extends Controller
                 'apellidos' => $request->apellidos,
                 'dirrecion' => $request->dirrecion,
                 'fecha_nacimiento' => date("Y-m-d", strtotime($request->fecha_nacimiento)),
+                'fechaIngreso' => date("Y-m-d", strtotime($request->fechaIngreso)),
                 'telefono' => $request->telefono,
                 'email' => $request->email,
+                'expectativaSalarial' => $request->expectativaSalarial,
+                'estadoCivilId' => $request->estadoCivilId,
+                'numeroHijos' => $request->numeroHijos,
+                'edades' => $request->edades,
+                'profesion' => $request->profesion,
+                'estadoPostulanteId' => $request->estadoPostulanteId,
             ]);
             return response()->json([
                 'status' => 1,
                 'message' => 'Registrado correctamente',
                 'data' => null,
             ], 200);
-
-            //enlace inicial
-            $insert = DB::table('enlace')->insert([
-                'codigo' => 'millaveprivada',
-                'estado' => 1,
-                'fecha_inicio' => '2023-04-22',
-                'fecha_fin' => '2023-04-26',
-                'postulante_id' => $insertPostulante,
-            ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => 0,
@@ -97,12 +107,23 @@ class postulantesController extends Controller
      */
     public function edit($id)
     {
-        $postulante = DB::table('postulante')->where('postulante_id', $id)->first();
+        $estadoCiviles = DB::table('estadocivil')->get();
+        $estadoPostulantes = DB::table('estadopostulante')->get();
+        $postulante = DB::table('postulante')
+            ->select(
+                'postulante.*',
+                DB::raw("DATE_FORMAT(postulante.fecha_nacimiento,'%Y-%m-%d') AS fecha_nacimiento"),
+                DB::raw("DATE_FORMAT(postulante.fechaIngreso,'%Y-%m-%d') AS fechaIngreso")
+            )
+            ->where('postulante_id', $id)
+            ->first();
         return response()->json([
             'status' => 1,
             'message' => 'Mostrar una postulante',
             'data' => [
                 'postulante' => $postulante,
+                'estadoCiviles' => $estadoCiviles,
+                'estadoPostulantes' => $estadoPostulantes,
             ],
         ], 200);
     }

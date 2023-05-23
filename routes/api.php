@@ -6,6 +6,7 @@ use App\Http\Controllers\PostulantesController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\CargoController;
 use App\Http\Controllers\EvaluacionController;
+use App\Http\Controllers\EvaluacionPostulanteController;
 use App\Http\Controllers\EvaluadorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -45,6 +46,7 @@ Route::prefix('/auth')->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/auth', [AuthController::class, 'index']);
+    Route::get('/auth-evaluador', [AuthController::class, 'indexEvaluador']);
 
     Route::prefix('home')->group(function () {
         Route::get('/', [HomeController::class, 'index']);
@@ -66,23 +68,33 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     Route::prefix('postulantes')->group(function () {
         Route::get('/', [PostulantesController::class, 'index']);
+        Route::get('/create', [PostulantesController::class, 'create']);
         Route::post('/', [PostulantesController::class, 'store']);
         Route::get('editar/{id}', [PostulantesController::class, 'edit']);
         Route::put('/{id}', [PostulantesController::class, 'update']);
         Route::delete('/{id}', [PostulantesController::class, 'destroy']);
     });
-    Route::prefix('evaluaciones')->group(function () {
-        Route::get('/', [EvaluacionController::class, 'index']);
-        Route::post('/', [EvaluacionController::class, 'store']);
-        Route::get('editar/{id}', [EvaluacionController::class, 'edit']);
-        Route::put('/{id}', [EvaluacionController::class, 'update']);
-        Route::delete('/{id}', [EvaluacionController::class, 'destroy']);
+    Route::prefix('evaluacion-postulante')->group(function () {
+        Route::get('/{id}', [EvaluacionPostulanteController::class, 'listaEvaluacion']);
+        Route::get('/', [EvaluacionPostulanteController::class, 'index']);
+        Route::post('/', [EvaluacionPostulanteController::class, 'store']);
+        Route::get('editar/{id}', [EvaluacionPostulanteController::class, 'edit']);
+        Route::put('/{id}', [EvaluacionPostulanteController::class, 'update']);
+        Route::delete('/{id}', [EvaluacionPostulanteController::class, 'destroy']);
     });
     Route::prefix('enlace')->group(function () {
         Route::get('/', [EnlaceController::class, 'index']);
         Route::post('/', [EnlaceController::class, 'store']);
         Route::get('/{id}', [EnlaceController::class, 'show']);
         Route::put('/{id}', [EnlaceController::class, 'update']);
+    });
+    Route::prefix('evaluacion')->group(function () {
+        Route::get('/', [EvaluacionController::class, 'index']);
+        Route::get('/create', [EvaluacionController::class, 'create']);
+        Route::post('/', [EvaluacionController::class, 'store']);
+        Route::get('editar/{id}', [EvaluacionController::class, 'edit']);
+        Route::put('/{id}', [EvaluacionController::class, 'update']);
+        Route::delete('/{id}', [EvaluacionController::class, 'destroy']);
     });
     Route::prefix('evaluador')->group(function () {
         Route::get('/', [EvaluadorController::class, 'index']);

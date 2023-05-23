@@ -12,20 +12,35 @@ class EvaluadorController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $evaluadores = DB::table('evaluador')
-            ->select(
-                'evaluador.*',
-                'cargo.nombreCargo'
-            )
-            ->join('cargo', 'cargo.cargo_id', 'evaluador.cargo_id')
+        //dd($request->user());
+        $listaEvaluacione = DB::table('postulante_evaluacion')
+            ->join('evaluacion', 'evaluacion.evaluacion_id', 'postulante_evaluacion.evaluacion_id')
+            ->where('postulante_id', $request->user()->postulante_id)
+            ->where('estado_evaluacion_postulante_id', 2)
+            ->first();
+
+        $tests = DB::table('test')
+            ->select('test.*')
+            ->join('test_evaluacion', 'test_evaluacion.test_id', 'test.test_id')
+            ->where('test_evaluacion.evaluacion_id', $listaEvaluacione->evaluacion_id)
             ->get();
+        $persona = DB::table('postulante')
+            ->where('postulante_id', $request->user()->postulante_id)
+            ->first();
+        $cargo = DB::table('cargo')
+            ->where('cargo_id', $listaEvaluacione->cargo_id)
+            ->first();
         return response()->json([
             'status' => 1,
-            'message' => 'lista de cargo',
+            'message' => 'Lista de test disponibles',
             'data' => [
-                'evaluadores' => $evaluadores,
+                'nombreCompleto' => "$persona->nombre $persona->apellidos",
+                'test' => $tests,
+                'cargo' => $cargo->nombreCargo,
+                'fechaFinal' => date('Y-m-d', strtotime($listaEvaluacione->fechafin)),
+                'fechaInicio' => date('Y-m-d', strtotime($listaEvaluacione->fechaInicio)),
             ],
         ], 200);
     }
@@ -37,16 +52,7 @@ class EvaluadorController extends Controller
      */
     public function create()
     {
-        $cargos = DB::table('cargo')->get();
-        $tests = DB::table('test')->get();
-        return response()->json([
-            'status' => 1,
-            'message' => 'Create cargo',
-            'data' => [
-                'cargos' => $cargos,
-                'tests' => $tests,
-            ],
-        ], 200);
+        //
     }
 
     /**
@@ -57,21 +63,7 @@ class EvaluadorController extends Controller
      */
     public function store(Request $request)
     {
-        $evaluador = DB::table('evaluador')->insertGetId([
-            'nombreEvaluador' => $request->nombreEvaluador,
-            'cargo_id' => $request->cargo_id,
-        ]);
-        foreach ($request->tests as $key => $test) {
-            $insertTest = DB::table('config_evaluador')->insertGetId([
-                'evaluador_id' => $evaluador,
-                'test_id' => $test['test_id'],
-            ]);
-        }
-        return response()->json([
-            'status' => 1,
-            'message' => 'Añadido correctamente',
-            'data' => $evaluador,
-        ], 200);
+        //
     }
 
     /**
@@ -93,14 +85,7 @@ class EvaluadorController extends Controller
      */
     public function edit($id)
     {
-        $evaluador = DB::table('evaluador')->where('evaluador_id', $id)->first();
-        return response()->json([
-            'status' => 1,
-            'message' => 'Mostrar una cargos',
-            'data' => [
-                'cargo' => $evaluador,
-            ],
-        ], 200);
+        //
     }
 
     /**
@@ -112,15 +97,7 @@ class EvaluadorController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $evaluador = DB::table('evaluador')->where('evaluador_id', $id)->update([
-            'nombreCargo' => $request->nombreCargo,
-            'cargo_id' => $request->cargo_id,
-        ]);
-        return response()->json([
-            'status' => 1,
-            'message' => 'Modificado correctamente',
-            'data' => $evaluador,
-        ], 200);
+        //
     }
 
     /**
@@ -131,11 +108,6 @@ class EvaluadorController extends Controller
      */
     public function destroy($id)
     {
-        $evaluador = DB::table('evaluador')->where('evaluador_id', $id)->delete();
-        return response()->json([
-            'status' => 1,
-            'message' => 'Eliminado correctamente',
-            'data' => $evaluador,
-        ], 200);
+        //
     }
 }
