@@ -1,13 +1,17 @@
 <?php
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\EnlaceController;
-use App\Http\Controllers\PostulantesController;
-use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\CargoController;
+use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\EnlaceController;
 use App\Http\Controllers\EvaluacionController;
 use App\Http\Controllers\EvaluacionPostulanteController;
 use App\Http\Controllers\EvaluadorController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PostulantesController;
+use App\Http\Controllers\PreguntaController;
+use App\Http\Controllers\ResultadoEvaluacion;
+use App\Http\Controllers\TestController;
+use App\Http\Controllers\TestResultadoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -104,4 +108,39 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/{id}', [EvaluadorController::class, 'update']);
         Route::delete('/{id}', [EvaluadorController::class, 'destroy']);
     });
+    Route::prefix('pregunta')->group(function () {
+        Route::post('/', [PreguntaController::class, 'store']);
+    });
+    Route::prefix('test')->group(function () {
+        Route::get('/', [TestController::class, 'index']);
+        Route::get('/create', [TestController::class, 'create']);
+        Route::post('/', [TestController::class, 'store']);
+        Route::get('/edit/{id}', [TestController::class, 'show']);
+        Route::get('/show/{id}', [TestController::class, 'edit']);
+        Route::put('/{id}', [TestController::class, 'update']);
+        Route::delete('/delete/{id}', [TestController::class, 'destroy']);
+    });
+    Route::prefix('test-resultado')->group(function () {
+        Route::get('/', [TestResultadoController::class, 'index']);
+        Route::get('/create/{test_id}/{postulante_id}', [TestResultadoController::class, 'create']);
+        Route::post('/{test_id}/{postulante_id}', [TestResultadoController::class, 'store']);
+        Route::get('/edit/{id}', [TestResultadoController::class, 'show']);
+        Route::get('/show/{id}', [TestResultadoController::class, 'edit']);
+        Route::put('/{id}', [TestResultadoController::class, 'update']);
+        Route::delete('/delete/{id}', [TestResultadoController::class, 'destroy']);
+    });
+    Route::prefix('resultado-evaluacion')->group(function () {
+        Route::post('/{test_id}/{postulante_id}', [ResultadoEvaluacion::class, 'store']);
+        Route::get('/edit/{id}', [ResultadoEvaluacion::class, 'show']);
+        Route::get('/show/{id}', [ResultadoEvaluacion::class, 'edit']);
+        Route::put('/{id}', [ResultadoEvaluacion::class, 'update']);
+        Route::delete('/delete/{id}', [ResultadoEvaluacion::class, 'destroy']);
+        Route::get('/report_pdf/{tipo}', [ResultadoEvaluacion::class, 'report_pdf']);
+        Route::get('/{evaluacion_id}/{postulante_id}', [ResultadoEvaluacion::class, 'index']);
+        Route::get('/create/{test_id}/{postulante_id}', [ResultadoEvaluacion::class, 'create']);
+    });
+});
+Route::prefix('resultado-report')->group(function () {
+    
+    Route::get('/report_pdf/{evaluacion_id}/{postulante_id}/{test_id}', [ResultadoEvaluacion::class, 'report_pdf']);
 });

@@ -19,12 +19,14 @@ class EvaluacionController extends Controller
             ->select(
                 'evaluacion.*',
                 'cargo.nombreCargo',
+                DB::raw("DATE_FORMAT(evaluacion.fechaCreacion,'%d/%m/%Y') AS fechaCreacion"),
                 'empresa.nombreEmpresa',
                 'estado.nombreEstado'
             )
             ->join('cargo', 'cargo.cargo_id', 'evaluacion.cargo_id')
             ->join('empresa', 'empresa.empresa_id', 'evaluacion.empresa_id')
             ->join('estado', 'estado.estado_id', 'evaluacion.estado_id')
+            ->orderBy('evaluacion.nombreEvaluacion','ASC')
             ->get();
         foreach ($evaluaciones as $key => $evaluacion) {
 
@@ -130,7 +132,7 @@ class EvaluacionController extends Controller
             $insertTest = DB::table('postulante_evaluacion')->insertGetId([
                 'evaluacion_id' => $evaluador,
                 'token' => $this->createToken($infoPostulantes->nombre, $infoPostulantes->apellidos),
-                'estado_evaluacion_postulante_id' => 1,
+                'estado_evaluacion_postulante_id' => $request->estado_id,
                 'postulante_id' => $postulante,
             ]);
         }
@@ -192,8 +194,7 @@ class EvaluacionController extends Controller
         $empresas = DB::table('empresa')->get();
         $postulantes = DB::table('postulante')
             ->select('postulante.*')
-            ->where('postulante_evaluacion.evaluacion_id', $id)
-            ->leftJoin('postulante_evaluacion', 'postulante_evaluacion.postulante_id', 'postulante.postulante_id')
+            ->where('postulante.estadoPostulanteId', 1)
             ->get();
         $estados = DB::table('estado')->get();
 
@@ -259,7 +260,6 @@ class EvaluacionController extends Controller
         $deleteTests = DB::table('test_evaluacion')->where('evaluacion_id', $id)->delete();
         $deletePostulantes = DB::table('postulante_evaluacion')
             ->where('evaluacion_id', $id)
-            ->where('tipousuario_id', 1)
             ->delete();
         foreach ($request->tests as $key => $test) {
             $insertTest = DB::table('test_evaluacion')->insertGetId([

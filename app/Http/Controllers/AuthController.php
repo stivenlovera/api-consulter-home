@@ -74,7 +74,6 @@ class AuthController extends Controller
                     ->where('postulante_id', $request->user()->postulante_id)
                     ->where('estado_evaluacion_postulante_id', 2)
                     ->first();
-
                 if ($validarHabilitado) {
                     $persona = DB::table('postulante')->where('postulante_id', $request->user()->postulante_id)->first();
                     return response([

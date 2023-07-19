@@ -24,16 +24,26 @@ class EvaluacionPostulanteController extends Controller
                     'postulante_evaluacion.*',
                     'postulante.*',
                     DB::raw("CONCAT(postulante.nombre,' ', postulante.apellidos) as nombreCompleto"),
-                    DB::raw("CONCAT('".env('APP_EVALUADOR_AUTH')."', postulante_evaluacion.token) as token")
+                    DB::raw("CONCAT('" . env('APP_EVALUADOR_AUTH') . "', postulante_evaluacion.token) as token")
                 )
                 ->join('postulante', 'postulante_evaluacion.postulante_id', 'postulante.postulante_id')
                 ->where('postulante_evaluacion.evaluacion_id', $id)
+                ->orderBy('postulante.nombre', 'DESC')
                 ->get();
+            $tests = DB::table('test_evaluacion')
+                ->join('test', 'test.test_id', 'test_evaluacion.test_id')
+                ->where('test_evaluacion.evaluacion_id', $id)
+                ->get();
+            $evaluacion = DB::table('evaluacion')
+                ->where('evaluacion.evaluacion_id', $id)
+                ->first();
             return response()->json([
                 'status' => 1,
                 'message' => 'Lista Postulantes',
                 'data' => [
                     'evaluacionPostulante' => $listPostulantes,
+                    'test' => $tests,
+                    'evaluacion' => $evaluacion,
                 ],
             ], 200);
         } catch (\Throwable $th) {
