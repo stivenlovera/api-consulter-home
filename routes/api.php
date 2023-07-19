@@ -80,6 +80,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     Route::prefix('evaluacion-postulante')->group(function () {
         Route::get('/{id}', [EvaluacionPostulanteController::class, 'listaEvaluacion']);
+        Route::get('/preview/{id}', [EvaluacionPostulanteController::class, 'listaPreview']);
         Route::get('/', [EvaluacionPostulanteController::class, 'index']);
         Route::post('/', [EvaluacionPostulanteController::class, 'store']);
         Route::get('editar/{id}', [EvaluacionPostulanteController::class, 'edit']);

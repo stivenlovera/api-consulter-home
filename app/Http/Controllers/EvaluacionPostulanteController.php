@@ -54,6 +54,33 @@ class EvaluacionPostulanteController extends Controller
             ], 200);
         }
     }
+    public function listaPreview($id)
+    {
+        try {
+            
+            $tests = DB::table('test_evaluacion')
+                ->join('test', 'test.test_id', 'test_evaluacion.test_id')
+                ->where('test_evaluacion.evaluacion_id', $id)
+                ->get();
+            $evaluacion = DB::table('evaluacion')
+                ->where('evaluacion.evaluacion_id', $id)
+                ->first();
+            return response()->json([
+                'status' => 1,
+                'message' => 'Lista Postulantes',
+                'data' => [
+                    'test' => $tests,
+                    'evaluacion' => $evaluacion,
+                ],
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Error Lista Postulantes',
+                'data' => null,
+            ], 200);
+        }
+    }
     /**
      * Show the form for creating a new resource.
      *

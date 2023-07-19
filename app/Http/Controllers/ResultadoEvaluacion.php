@@ -45,7 +45,7 @@ class ResultadoEvaluacion extends Controller
             'data' => $tests,
         ], 200);
     }
-
+    
     /**
      * Show the form for creating a new resource.
      *
