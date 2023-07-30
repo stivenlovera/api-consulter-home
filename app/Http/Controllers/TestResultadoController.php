@@ -81,9 +81,6 @@ class TestResultadoController extends Controller
      */
     public function store(Request $request)
     {
-        /* return response()->json([
-            'data' => $request->all(),
-        ]); */
         $resultadoTest = DB::table('resultado_test')->insertGetId([
             'test_id' => $request->test_id,
             'fecha_inicio' => $request->fecha_inicio,
@@ -128,6 +125,9 @@ class TestResultadoController extends Controller
                     return "sin_imagen.jpg";
                 }
             default:
+                if ($descripcion == null) {
+                    $descripcion = "";
+                }
                 return $descripcion;
                 break;
         }

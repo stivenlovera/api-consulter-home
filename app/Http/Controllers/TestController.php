@@ -63,7 +63,7 @@ class TestController extends Controller
                     'imagen' => $imagenRespuesta,
                     'pregunta_id' => $pregunta_insert,
                     'procesar' => 'si',
-                    'valor' => '1',
+                    'valor' => $respuesta['valor'],
                 ]);
             }
         }
