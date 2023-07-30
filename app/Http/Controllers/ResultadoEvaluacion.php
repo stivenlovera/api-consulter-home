@@ -204,10 +204,12 @@ class ResultadoEvaluacion extends Controller
         $preguntas = DB::table('pregunta')
             ->where('pregunta.test_id', $test->test_id)
             ->get();
-        $excel = [];
-        $data = new \stdClass();
-        foreach ($preguntas as $key => $pregunta) {
+        $excelPreguntas = [];
 
+        foreach ($preguntas as $key => $pregunta) {
+            $data = new \stdClass();
+            $data->nro = $key;
+            $data->nro = $pregunta->;
             $respuestas = DB::table('respuesta')
                 ->where('respuesta.pregunta_id', $pregunta->pregunta_id)
                 ->get();
