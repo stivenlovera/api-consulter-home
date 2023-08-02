@@ -51,7 +51,7 @@ class TestController extends Controller
         foreach ($request->preguntas as $key => $pregunta) {
             $imagenPregunta = $this->validarImagen($test_insert, $pregunta['imagen'], 'preguntas');
             $pregunta_insert = DB::table('pregunta')->insertGetId([
-                'pregunta_nombre' => $pregunta['pregunta_nombre'],
+                'pregunta_nombre' => $pregunta['pregunta_nombre'] == null ? '' : $pregunta['pregunta_nombre'],
                 'tiempo_total' => $pregunta['tiempo_total'],
                 'imagen' => $imagenPregunta,
                 'test_id' => $test_insert,

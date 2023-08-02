@@ -34,7 +34,7 @@
         </div>
         <div>
             <p style="margin: 0"><strong>Fecha de evaluacion: </strong>
-                {{ date('d/m/Y H:m:s a', strtotime($test->resultaddos_test->fecha_inicio)) }}</p>
+                {{ date('d/m/Y H:m:s a', strtotime($test->resultados_test->fecha_inicio)) }}</p>
         </div>
         <table>
             <thead>

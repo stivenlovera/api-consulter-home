@@ -12,7 +12,7 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class exportSelecionUnica implements
+class exportSeleccionUnicaPlantilla implements
     FromCollection,
     ShouldAutoSize,
     WithHeadings,
@@ -43,10 +43,9 @@ class exportSelecionUnica implements
     public function headings(): array
     {
         return [
-            'Nro',
-            'Cuestionario',
-            'Si',
-            'No'
+            '',
+            '',
+            ''
         ];
     }
 
@@ -70,10 +69,10 @@ class exportSelecionUnica implements
                 //size
                 $event->sheet->getColumnDimension('I')->setAutoSize(false);
                 $event->sheet->getColumnDimension('H')->setAutoSize(false);
-                $event->sheet->getColumnDimension('G')->setAutoSize(false);
+                /* $event->sheet->getColumnDimension('G')->setAutoSize(false); */
                 $event->sheet->getColumnDimension('J')->setAutoSize(false);
 
-                $event->sheet->getColumnDimension('G')->setWidth(16);
+                /* $event->sheet->getColumnDimension('G')->setWidth(16); */
                 $event->sheet->getColumnDimension('H')->setWidth(15);
                 $event->sheet->getColumnDimension('E')->setWidth(15);
                 $event->sheet->getColumnDimension('I')->setWidth(20);
@@ -93,7 +92,7 @@ class exportSelecionUnica implements
                         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
                     ],
                 ]);
-                $event->sheet->getStyle('A6:D6')->applyFromArray([
+               /*  $event->sheet->getStyle('A6:D6')->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -106,7 +105,7 @@ class exportSelecionUnica implements
                     'fill' => [
                         'color' => array('rgb' => 'd6d6d6'),
                     ],
-                ]);
+                ]); */
             },
         ];
     }
@@ -119,6 +118,6 @@ class exportSelecionUnica implements
     }
     public function startCell(): string
     {
-        return 'A6';
+        return 'E6';
     }
 }

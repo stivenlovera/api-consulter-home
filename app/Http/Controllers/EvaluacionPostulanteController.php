@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class EvaluacionPostulanteController extends Controller
@@ -14,7 +14,6 @@ class EvaluacionPostulanteController extends Controller
      */
     public function index()
     {
-
     }
     public function listaEvaluacion($id)
     {
@@ -57,20 +56,27 @@ class EvaluacionPostulanteController extends Controller
     public function listaPreview($id)
     {
         try {
-            
+
             $tests = DB::table('test_evaluacion')
                 ->join('test', 'test.test_id', 'test_evaluacion.test_id')
                 ->where('test_evaluacion.evaluacion_id', $id)
                 ->get();
             $evaluacion = DB::table('evaluacion')
+                ->select('*','evaluacion.fechafin as fechaFin')
                 ->where('evaluacion.evaluacion_id', $id)
                 ->first();
+            $cargo = DB::table('cargo')->where('cargo_id', $evaluacion->cargo_id)->first();
+            $empresa = DB::table('empresa')->where('empresa_id', $evaluacion->empresa_id)->first();
+            $estado = DB::table('estado')->where('estado_id', $evaluacion->estado_id)->first();
             return response()->json([
                 'status' => 1,
                 'message' => 'Lista Postulantes',
                 'data' => [
                     'test' => $tests,
                     'evaluacion' => $evaluacion,
+                    'cargo' => $cargo,
+                    'empresa' => $empresa,
+                    'estado' => $estado
                 ],
             ], 200);
         } catch (\Throwable $th) {
