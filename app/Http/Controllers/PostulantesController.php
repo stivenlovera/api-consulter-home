@@ -142,7 +142,7 @@ class postulantesController extends Controller
             'nombre' => $request->nombre,
             'apellidos' => $request->apellidos,
             'dirrecion' => $request->dirrecion,
-            'fecha_nacimiento' => $request->fecha_nacimiento,
+            'fecha_nacimiento' => date('Y-m-d', strtotime($request->fecha_nacimiento)),
             'telefono' => $request->telefono,
             'email' => $request->email,
         ]);
