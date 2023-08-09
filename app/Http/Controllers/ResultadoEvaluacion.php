@@ -134,7 +134,7 @@ class ResultadoEvaluacion extends Controller
                 'test.*',
                 'cargo.*'
             )
-            ->join('evaluacion', 'evaluacion.evaluacion_id', 'evaluacion.evaluacion_id')
+            ->join('evaluacion', 'evaluacion.evaluacion_id', 'test_evaluacion.evaluacion_id')
             ->join('cargo', 'cargo.cargo_id', 'evaluacion.cargo_id')
             ->join('postulante_evaluacion', 'postulante_evaluacion.evaluacion_id', 'test_evaluacion.evaluacion_id')
             ->join('postulante', 'postulante.postulante_id', 'postulante_evaluacion.postulante_id')
@@ -171,15 +171,19 @@ class ResultadoEvaluacion extends Controller
                 $respuesta->resultados_respuesta = $resultado_respuesta;
             }
         }
-
+        /*         
+        return response()->json([
+            'data'=>$test
+        ]); */
+        $nombreDocumento = $test->nombre . ' ' . $test->apellidos . ' - ' . $test->nombreTest . ' ' . date('d-m-Y', strtotime($test->resultados_test->fecha_inicio)) . '.pdf';
         switch ($test->tipo_preguntas_id) {
             case 1:
                 $pdf = PDF::loadView('resultados_test.criterio', compact('test', 'preguntas'))->setPaper('letter')->setWarnings(false);
-                return $pdf->download("Doumento" . "stiven" . ".pdf");
+                return $pdf->download($nombreDocumento);
 
             case 4:
                 $pdf = PDF::loadView('resultados_test.dibujo', compact('test', 'preguntas'))->setPaper('letter')->setWarnings(false);
-                return $pdf->download("Doumento" . "stiven" . ".pdf");
+                return $pdf->download($nombreDocumento);
 
             default:
                 break;
@@ -195,7 +199,7 @@ class ResultadoEvaluacion extends Controller
                 'test.*',
                 'cargo.*'
             )
-            ->join('evaluacion', 'evaluacion.evaluacion_id', 'evaluacion.evaluacion_id')
+            ->join('evaluacion', 'evaluacion.evaluacion_id', 'test_evaluacion.evaluacion_id')
             ->join('cargo', 'cargo.cargo_id', 'evaluacion.cargo_id')
             ->join('postulante_evaluacion', 'postulante_evaluacion.evaluacion_id', 'test_evaluacion.evaluacion_id')
             ->join('postulante', 'postulante.postulante_id', 'postulante_evaluacion.postulante_id')
@@ -250,17 +254,17 @@ class ResultadoEvaluacion extends Controller
 
             $preguntasExport[] = $data;
         }
-        //dd($test->tipo_preguntas_id);
+        $nombreDocumento = $test->nombre . ' ' . $test->apellidos . ' - ' . $test->nombreTest . ' ' . date('d-m-Y', strtotime($test->resultados_test->fecha_inicio)) . '.xlsx';
         switch ($test->tipo_preguntas_id) {
 
             case 9:
-                return $this->excel->download(new exportSelecionUnica($test, $preguntasExport), "Hoja de ejemplo " . date('m-d-Y') . ".xlsx");
+                return $this->excel->download(new exportSelecionUnica($test, $preguntasExport), $nombreDocumento);
                 break;
             case 10:
                 return $this->ResultadoSeleccionUnicaPlantilla($evaluacion_id, $postulante_id, $test_id);
                 break;
             default:
-                return $this->excel->download(new exportSelecionUnica($test, $preguntasExport), "Hoja de ejemplo " . date('m-d-Y') . ".xlsx");
+                return $this->excel->download(new exportSelecionUnica($test, $preguntasExport), $nombreDocumento);
                 break;
         }
     }
@@ -272,7 +276,7 @@ class ResultadoEvaluacion extends Controller
                 'test.*',
                 'cargo.*'
             )
-            ->join('evaluacion', 'evaluacion.evaluacion_id', 'evaluacion.evaluacion_id')
+            ->join('evaluacion', 'evaluacion.evaluacion_id', 'test_evaluacion.evaluacion_id')
             ->join('cargo', 'cargo.cargo_id', 'evaluacion.cargo_id')
             ->join('postulante_evaluacion', 'postulante_evaluacion.evaluacion_id', 'test_evaluacion.evaluacion_id')
             ->join('postulante', 'postulante.postulante_id', 'postulante_evaluacion.postulante_id')
@@ -329,12 +333,11 @@ class ResultadoEvaluacion extends Controller
                 }
                 $respuesta->resultados_respuesta = $resultado_respuesta;
             }
-            /*  dump($data); */
-            //dump($preguntasExport);
+
             $preguntasExport[] = $data;
         }
-
-        return $this->excel->download(new exportSeleccionUnicaPlantilla($test, $preguntasExport), "Hoja de ejemplo " . date('m-d-Y') . ".xlsx");
+        $nombreDocumento = $test->nombre . ' ' . $test->apellidos . ' - ' . $test->nombreTest . ' ' . date('d-m-Y', strtotime($test->resultados_test->fecha_inicio)) . '.xlsx';
+        return $this->excel->download(new exportSeleccionUnicaPlantilla($test, $preguntasExport), $nombreDocumento);
     }
     public function ResultadoSeleccionUnicaKuden($evaluacion_id, $postulante_id, $test_id)
     {
@@ -344,7 +347,7 @@ class ResultadoEvaluacion extends Controller
                 'test.*',
                 'cargo.*'
             )
-            ->join('evaluacion', 'evaluacion.evaluacion_id', 'evaluacion.evaluacion_id')
+            ->join('evaluacion', 'evaluacion.evaluacion_id', 'test_evaluacion.evaluacion_id')
             ->join('cargo', 'cargo.cargo_id', 'evaluacion.cargo_id')
             ->join('postulante_evaluacion', 'postulante_evaluacion.evaluacion_id', 'test_evaluacion.evaluacion_id')
             ->join('postulante', 'postulante.postulante_id', 'postulante_evaluacion.postulante_id')
@@ -410,6 +413,7 @@ class ResultadoEvaluacion extends Controller
         return response()->json([
             'data' => [$preguntasExport],
         ], 200); */
-        return $this->excel->download(new exportSeleccionUnicaPlantilla($test, $preguntasExport), "Hoja de ejemplo " . date('m-d-Y') . ".xlsx");
+        $nombreDocumento = $test->nombre . ' ' . $test->apellidos . ' - ' . $test->nombreTest . ' ' . date('d-m-Y', strtotime($test->resultados_test->fecha_inicio)) . '.xlsx';
+        return $this->excel->download(new exportSeleccionUnicaPlantilla($test, $preguntasExport), $nombreDocumento);
     }
 }

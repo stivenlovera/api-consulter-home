@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use DB;
+use App\Exports\exportSeleccionUnicaPlantilla;
+use App\Exports\exportSelecionUnica;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Excel;
+
 use Illuminate\Http\Request;
 use Image;
 
@@ -93,14 +98,20 @@ class TestController extends Controller
     {
         $test = DB::table('test')->where('test_id', $id)->first();
         $preguntas = DB::table('pregunta')->where('test_id', $test->test_id)->get();
+
         foreach ($preguntas as $key => $pregunta) {
             $respuesta = DB::table('respuesta')->where('pregunta_id', $pregunta->pregunta_id)->get();
             $pregunta->respuestas = $respuesta;
         }
+        $pasos = DB::table('procedimiento')->where('test_id', $id)->get();
+        foreach ($pasos as $key => $paso) {
+            $paso->imagen = $this->FileToBase64($paso->imagen, 'pasos');
+        }
         $test->preguntas = $preguntas;
+        $test->pasos = $pasos;
         return response()->json([
             'status' => 1,
-            'message' => 'Registrado correctamente',
+            'message' => 'Visualizacion editar',
             'data' => $test,
         ], 200);
     }
@@ -115,14 +126,20 @@ class TestController extends Controller
     {
         $test = DB::table('test')->where('test_id', $id)->first();
         $preguntas = DB::table('pregunta')->where('test_id', $test->test_id)->get();
+
         foreach ($preguntas as $key => $pregunta) {
             $respuesta = DB::table('respuesta')->where('pregunta_id', $pregunta->pregunta_id)->get();
             $pregunta->respuestas = $respuesta;
         }
+        $pasos = DB::table('procedimiento')->where('test_id', $id)->get();
+        foreach ($pasos as $key => $paso) {
+            $paso->imagen = $this->FileToBase64($paso->imagen, 'pasos');
+        }
         $test->preguntas = $preguntas;
+        $test->pasos = $pasos;
         return response()->json([
             'status' => 1,
-            'message' => 'Registrado correctamente',
+            'message' => 'Visualizacion editar',
             'data' => $test,
         ], 200);
     }
@@ -136,22 +153,41 @@ class TestController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $test_update = DB::table('test')
-            ->where('test_id', $id)
-            ->update([
-                'nombreTest' => $request->nombreTest,
-                'descripcion_test' => $request->descripcion_test,
-                'tiempo_respuesta' => $request->tiempo_respuesta,
-                'ver_separado' => '0',
+        $test_update = DB::table('test')->where('test_id', $id)->update([
+            'nombreTest' => $request->nombreTest,
+            'descripcion_test' => $request->descripcion_test,
+            'tiempo_total' => $request->tiempo_total,
+            'procedimiento' => $request->procedimiento,
+            'tipo_preguntas_id' => $request->tipo_preguntas_id,
+        ]);
+        foreach ($request->preguntas as $key => $pregunta) {
+            $imagenPregunta = $this->validarImagen($test_update, $pregunta['imagen'], 'preguntas');
+            $pregunta_update = DB::table('pregunta')->where('pregunta_id', $pregunta->pregunta_id)->update([
+                'pregunta_nombre' => $pregunta['pregunta_nombre'] == null ? '' : $pregunta['pregunta_nombre'],
+                'tiempo_total' => $pregunta['tiempo_total'],
+                'imagen' => $imagenPregunta,
+                'test_id' => $test_update,
             ]);
-        $preguntas = DB::table('pregunta')->where('test_id', $id)->get();
-        foreach ($preguntas as $key => $pregunta) {
-            $pregunta_delete = DB::table('pregunta')
-                ->where('pregunta_id', $pregunta->pregunta_id)
-                ->delete();
-            $respuesta_delete = DB::table('respuesta')
-                ->where('pregunta_id', $pregunta->pregunta_id)
-                ->delete();
+            foreach ($pregunta['respuestas'] as $key => $respuesta) {
+                $imagenRespuesta = $this->validarImagen($test_update, $respuesta['imagen'], 'respuestas');
+                $respuesta_insert = DB::table('respuesta')
+                    ->where('respuesta_id', $respuesta->respuesta_id)->insertGetId([
+                        'descripcion' => $respuesta['descripcion'],
+                        'imagen' => $imagenRespuesta,
+                        'pregunta_id' => $pregunta_update,
+                        'procesar' => 'si',
+                        'valor' => $respuesta['valor'],
+                    ]);
+            }
+        }
+        foreach ($request->pasos as $key => $paso) {
+            $imagenPasos = $this->validarImagenPasos($paso['imagen'], 'pasos');
+            $pasos = DB::table('procedimiento')
+                ->where('procedimiento_id', $paso->procedimiento_id)->update([
+                    'descripcion' => $paso['descripcion'],
+                    'imagen' => $imagenPasos,
+                    'test_id' => $test_update,
+                ]);
         }
 
         return response()->json([
@@ -191,13 +227,19 @@ class TestController extends Controller
             'data' => null,
         ], 200);
     }
-    public function FileToBase64($nameFile)
+    public function FileToBase64($nameFile, $tipo)
     {
         try {
-            $path = public_path() . '/assets/cuestionario/' . $nameFile . '';
-            $extencion = pathinfo($path, PATHINFO_EXTENSION);
-            $image = base64_encode(file_get_contents($path));
-            return "data:image/$extencion;base64, $image";
+            switch ($tipo) {
+                case 'pasos':
+                    $path = public_path() . '/assets/pasos/' . $nameFile . '';
+                    $extencion = pathinfo($path, PATHINFO_EXTENSION);
+                    $image = base64_encode(file_get_contents($path));
+                    return "data:image/$extencion;base64, $image";
+                default:
+                    # code...
+                    break;
+            }
         } catch (\Throwable $th) {
             return "";
         }
