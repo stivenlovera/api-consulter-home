@@ -152,7 +152,6 @@ class postulantesController extends Controller
             'data' => $postulante,
         ], 200);
     }
-
     /**
      * Remove the specified resource from storage.
      *
