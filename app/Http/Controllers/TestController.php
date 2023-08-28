@@ -54,6 +54,9 @@ class TestController extends Controller
             'tipo_preguntas_id' => $request->tipo_preguntas_id,
         ]);
         foreach ($request->preguntas as $key => $pregunta) {
+          /*   return response()->json([
+                $test_insert, $pregunta['imagen'], 'preguntas'
+            ], 200); */
             $imagenPregunta = $this->validarImagen($test_insert, $pregunta['imagen'], 'preguntas');
             $pregunta_insert = DB::table('pregunta')->insertGetId([
                 'pregunta_nombre' => $pregunta['pregunta_nombre'] == null ? '' : $pregunta['pregunta_nombre'],
@@ -259,7 +262,7 @@ class TestController extends Controller
         $verificar = DB::table('test')
             ->where('test_id', $test_id)
             ->first();
-        if ($verificar->tipo_preguntas_id == 4 && $descripcion != null && $descripcion != '') {
+        if (($verificar->tipo_preguntas_id == 4 || $verificar->tipo_preguntas_id == 11) && $descripcion != null && $descripcion != '') {
             return $descripcion = $this->Base64toFile($descripcion, $carpeta);
         } else {
             return '';
