@@ -23,7 +23,7 @@ class TestResultadoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(Request $request, $test_id, $postulante_id)
+    public function create(Request $request, $test_id, $postulante_id, $evaluacion_id)
     {
         $evaluacion = DB::table('postulante_evaluacion')
             ->where('postulante_id', $postulante_id)
@@ -34,19 +34,20 @@ class TestResultadoController extends Controller
             )
             ->join('test', 'test.test_id', 'test_evaluacion.test_id')
             ->where('test_evaluacion.test_id', $test_id)
-            ->where('evaluacion_id', $evaluacion->evaluacion_id)
+            ->where('evaluacion_id', $evaluacion_id)
             ->first();
+
         $verificar_test = DB::table('resultado_test')
             ->where('resultado_test.test_id', $test->test_id)
             ->where('resultado_test.postulante_id', $request->user()->postulante_id)
             ->first();
-        /* return response()->json([
-        'status' => 1,
-        'message' => 'Lista de test disponibles',
-        'data' => $postulante_id,
-        ], 200); */
+
         if ($verificar_test) {
-            $test->completado = 'si';
+            if ($verificar_test->estado == 0) {
+                $test->completado = 'no';
+            } else {
+                $test->completado = 'si';
+            }
         } else {
             $test->completado = 'no';
         }
@@ -57,18 +58,34 @@ class TestResultadoController extends Controller
         $procedimientos = DB::table('procedimiento')
             ->where('procedimiento.test_id', $test->test_id)
             ->get();
+
         foreach ($preguntas as $key => $pregunta) {
             $respuestas = DB::table('respuesta')
                 ->where('respuesta.pregunta_id', $pregunta->pregunta_id)
                 ->get();
             $pregunta->respuestas = $respuestas;
         }
+        //validar si existe
+        $resultado_test_id;
+        if ($verificar_test) {
+            $resultado_test_id = $verificar_test->resultado_test_id;
+        } else {
+            $creacionTetsResultado = DB::table('resultado_test')->insertGetId([
+                'test_id' => $test_id,
+                'fecha_inicio' => date('Y-m-d H:i:s'),
+                'resultado_test.postulante_id' => $request->user()->postulante_id,
+            ]);
+            $resultado_test_id = $creacionTetsResultado;
+        }
+
         $test->preguntas = $preguntas;
         $test->pasos = $procedimientos;
-
+        $test->test_resultado = $resultado_test_id;
+        $test->fecha_inicio = $verificar_test->fecha_inicio;
+        $test->fecha_sistema = date('Y-m-d H:i:s');
         return response()->json([
             'status' => 1,
-            'message' => 'Lista de test disponibles',
+            'message' => 'Test a resolver',
             'data' => $test,
         ], 200);
     }
@@ -81,11 +98,11 @@ class TestResultadoController extends Controller
      */
     public function store(Request $request)
     {
-        $resultadoTest = DB::table('resultado_test')->insertGetId([
+        $resultadoTest = DB::table('resultado_test')->update([
             'test_id' => $request->test_id,
-            'fecha_inicio' => $request->fecha_inicio,
             'resultado_test.postulante_id' => $request->user()->postulante_id,
-        ]);
+        ])
+            ->where('resultado_test.resultado_test_id', $request->resultado_test_id);
         foreach ($request->respuestaPreguntas as $key => $pregunta) {
             $resultadoPregunta = DB::table('resultado_pregunta')->insertGetId([
                 'resultado_test_id' => $resultadoTest,

@@ -14,7 +14,7 @@ class EvaluadorController extends Controller
      */
     public function index(Request $request)
     {
-        $listaEvaluacion = DB::table('postulante_evaluacion')
+        $evaluacion = DB::table('postulante_evaluacion')
             ->join('evaluacion', 'evaluacion.evaluacion_id', 'postulante_evaluacion.evaluacion_id')
             ->where('postulante_id', $request->user()->postulante_id)
             ->where('estado_evaluacion_postulante_id', 2)
@@ -24,7 +24,7 @@ class EvaluadorController extends Controller
                 'test.*'
             )
             ->join('test_evaluacion', 'test_evaluacion.test_id', 'test.test_id')
-            ->where('test_evaluacion.evaluacion_id', $listaEvaluacion->evaluacion_id)
+            ->where('test_evaluacion.evaluacion_id', $evaluacion->evaluacion_id)
             ->get();
         foreach ($tests as $key => $test) {
             $verificar_test = DB::table('resultado_test')
@@ -32,7 +32,11 @@ class EvaluadorController extends Controller
                 ->where('resultado_test.postulante_id', $request->user()->postulante_id)
                 ->first();
             if ($verificar_test) {
-                $test->completado = 'si';
+                if ($verificar_test->estado == 0) {
+                    $test->completado = 'no';
+                }else {
+                    $test->completado = 'si';
+                }
             } else {
                 $test->completado = 'no';
             }
@@ -41,7 +45,7 @@ class EvaluadorController extends Controller
             ->where('postulante_id', $request->user()->postulante_id)
             ->first();
         $cargo = DB::table('cargo')
-            ->where('cargo_id', $listaEvaluacion->cargo_id)
+            ->where('cargo_id', $evaluacion->cargo_id)
             ->first();
         return response()->json([
             'status' => 1,
@@ -51,8 +55,9 @@ class EvaluadorController extends Controller
                 'nombreCompleto' => "$persona->nombre $persona->apellidos",
                 'test' => $tests,
                 'cargo' => $cargo->nombreCargo,
-                'fechaFinal' => date('Y-m-d', strtotime($listaEvaluacion->fechafin)),
-                'fechaInicio' => date('Y-m-d', strtotime($listaEvaluacion->fechaInicio)),
+                'fechaFinal' => date('Y-m-d', strtotime($evaluacion->fechafin)),
+                'fechaInicio' => date('Y-m-d', strtotime($evaluacion->fechaInicio)),
+                'evaluacion_id' => $evaluacion->evaluacion_id,
             ],
         ], 200);
     }

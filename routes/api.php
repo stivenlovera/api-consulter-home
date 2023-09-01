@@ -123,7 +123,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     Route::prefix('test-resultado')->group(function () {
         Route::get('/', [TestResultadoController::class, 'index']);
-        Route::get('/create/{test_id}/{postulante_id}', [TestResultadoController::class, 'create']);
+        Route::get('/create/{test_id}/{postulante_id}/{evaluacion_id}', [TestResultadoController::class, 'create']);
         Route::post('/{test_id}/{postulante_id}', [TestResultadoController::class, 'store']);
         Route::get('/edit/{id}', [TestResultadoController::class, 'show']);
         Route::get('/show/{id}', [TestResultadoController::class, 'edit']);
