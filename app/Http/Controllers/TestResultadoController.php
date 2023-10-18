@@ -80,7 +80,7 @@ class TestResultadoController extends Controller
 
         $test->preguntas = $preguntas;
         $test->pasos = $procedimientos;
-        $test->test_resultado = $resultado_test_id;
+        $test->resultado_test_id = $resultado_test_id;
         $test->fecha_inicio = $verificar_test->fecha_inicio;
         $test->fecha_sistema = date('Y-m-d H:i:s');
         return response()->json([
@@ -98,11 +98,13 @@ class TestResultadoController extends Controller
      */
     public function store(Request $request)
     {
-        $resultadoTest = DB::table('resultado_test')->update([
+        $resultadoTest = DB::table('resultado_test')
+        ->where('resultado_test.resultado_test_id', $request->resultado_test_id)
+        ->update([
             'test_id' => $request->test_id,
             'resultado_test.postulante_id' => $request->user()->postulante_id,
-        ])
-            ->where('resultado_test.resultado_test_id', $request->resultado_test_id);
+        ]);
+            
         foreach ($request->respuestaPreguntas as $key => $pregunta) {
             $resultadoPregunta = DB::table('resultado_pregunta')->insertGetId([
                 'resultado_test_id' => $resultadoTest,

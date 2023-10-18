@@ -259,7 +259,7 @@ class TestController extends Controller
         $verificar = DB::table('test')
             ->where('test_id', $test_id)
             ->first();
-        if (($verificar->tipo_preguntas_id == 4 || $verificar->tipo_preguntas_id == 11 || $verificar->tipo_preguntas_id == 12 || $verificar->tipo_preguntas_id == 6 ) && $descripcion != null && $descripcion != '') {
+        if (($verificar->tipo_preguntas_id == 4 || $verificar->tipo_preguntas_id == 11 || $verificar->tipo_preguntas_id == 12 || $verificar->tipo_preguntas_id == 6 || $verificar->tipo_preguntas_id == 13) && $descripcion != null && $descripcion != '') {
             return $descripcion = $this->Base64toFile($descripcion, $carpeta);
         } else {
             return '';
