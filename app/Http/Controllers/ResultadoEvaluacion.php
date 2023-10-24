@@ -28,6 +28,7 @@ class ResultadoEvaluacion extends Controller
                 'test.*',
                 'postulante_evaluacion.postulante_id',
                 'postulante_evaluacion.evaluacion_id',
+                'test_evaluacion.test_evaluacion_id'
             )
             ->join('postulante_evaluacion', 'postulante_evaluacion.evaluacion_id', 'test_evaluacion.evaluacion_id')
             ->join('test', 'test.test_id', 'test_evaluacion.test_id')
@@ -38,14 +39,15 @@ class ResultadoEvaluacion extends Controller
         $evaluacion = DB::table('evaluacion')->where('evaluacion_id', $evaluacion_id)->first();
         foreach ($tests as $key => $test) {
             $verificar_test = DB::table('resultado_test')
-                ->where('resultado_test.test_id', $test->test_id)
+                ->where('resultado_test.test_evaluacion_id', $test->test_evaluacion_id)
                 ->where('resultado_test.postulante_id', $postulante_id)
                 ->first();
             if ($verificar_test) {
                 $test->completado = 'si';
+                $test->resultado_test_id = $verificar_test->resultado_test_id;
             } else {
                 $test->completado = 'no';
-                $test->evaluacion_id = $evaluacion_id;
+                $test->resultado_test_id = 0;
             }
         }
 
@@ -55,7 +57,7 @@ class ResultadoEvaluacion extends Controller
             'data' => [
                 'tests' => $tests,
                 'postulante' => $postulante,
-                'evaluacion' => $evaluacion
+                'evaluacion' => $evaluacion,
             ],
         ], 200);
     }
@@ -125,9 +127,9 @@ class ResultadoEvaluacion extends Controller
     {
         //impletamenta alerta  para pendientes
     }
-    public function report_pdf($evaluacion_id, $postulante_id, $test_id)
+    public function report_pdf($evaluacion_id, $postulante_id, $test_evaluacion_id, $resultado_test_id)
     {
-        //informacion  general del test
+        //informacion general del test
         $test = DB::table('test_evaluacion')
             ->select(
                 'postulante.*',
@@ -141,12 +143,13 @@ class ResultadoEvaluacion extends Controller
             ->join('test', 'test.test_id', 'test_evaluacion.test_id')
             ->where('postulante_evaluacion.evaluacion_id', $evaluacion_id)
             ->where('postulante_evaluacion.postulante_id', $postulante_id)
-            ->where('test.test_id', $test_id)
+            ->where('test_evaluacion.test_evaluacion_id', $test_evaluacion_id)
             ->first();
 
         $test->resultados_test = DB::table('resultado_test')
             ->where('resultado_test.postulante_id', $postulante_id)
-            ->where('resultado_test.test_id', $test->test_id)
+            ->where('resultado_test.test_evaluacion_id', $test_evaluacion_id)
+            ->where('resultado_test.resultado_test_id', $resultado_test_id)
             ->first();
         //seccion de preguntas
         $preguntas = DB::table('pregunta')
@@ -156,6 +159,7 @@ class ResultadoEvaluacion extends Controller
             $respuestas = DB::table('respuesta')
                 ->where('respuesta.pregunta_id', $pregunta->pregunta_id)
                 ->get();
+
             $respuestas_preguntas = DB::table('resultado_pregunta')
                 ->where('resultado_pregunta.pregunta_id', $pregunta->pregunta_id)
                 ->where('resultado_pregunta.resultado_test_id', $test->resultados_test->resultado_test_id)
@@ -163,7 +167,9 @@ class ResultadoEvaluacion extends Controller
 
             $pregunta->resultados_pregunta = $respuestas_preguntas;
             $pregunta->respuestas = $respuestas;
+
             foreach ($respuestas as $key => $respuesta) {
+                //dd($pregunta, $respuesta);
                 $resultado_respuesta = DB::table('resultado_respuesta')
                     ->where('resultado_respuesta.respuesta_id', $respuesta->respuesta_id)
                     ->where('resultado_respuesta.resultado_pregunta_id', $pregunta->resultados_pregunta->resultado_pregunta_id)
@@ -171,10 +177,7 @@ class ResultadoEvaluacion extends Controller
                 $respuesta->resultados_respuesta = $resultado_respuesta;
             }
         }
-        /*         
-        return response()->json([
-            'data'=>$test
-        ]); */
+        //dd( $preguntas);
         $nombreDocumento = $test->nombre . ' ' . $test->apellidos . ' - ' . $test->nombreTest . ' ' . date('d-m-Y', strtotime($test->resultados_test->fecha_inicio)) . '.pdf';
         switch ($test->tipo_preguntas_id) {
             case 1:
@@ -184,12 +187,15 @@ class ResultadoEvaluacion extends Controller
             case 4:
                 $pdf = PDF::loadView('resultados_test.dibujo', compact('test', 'preguntas'))->setPaper('letter')->setWarnings(false);
                 return $pdf->download($nombreDocumento);
+            case 6:
+                $pdf = PDF::loadView('resultados_test.roshard', compact('test', 'preguntas'))->setPaper('letter')->setWarnings(false);
+                return $pdf->download($nombreDocumento);
 
             default:
                 break;
         }
     }
-    public function ResultadoSeleccionUnica($evaluacion_id, $postulante_id, $test_id)
+    public function ResultadoSeleccionUnica($evaluacion_id, $postulante_id, $test_evaluacion_id, $resultado_test_id)
     {
         $preguntasExport = [];
 
@@ -206,12 +212,12 @@ class ResultadoEvaluacion extends Controller
             ->join('test', 'test.test_id', 'test_evaluacion.test_id')
             ->where('postulante_evaluacion.evaluacion_id', $evaluacion_id)
             ->where('postulante_evaluacion.postulante_id', $postulante_id)
-            ->where('test.test_id', $test_id)
+            ->where('test_evaluacion.test_evaluacion_id', $test_evaluacion_id)
             ->first();
 
         $test->resultados_test = DB::table('resultado_test')
             ->where('resultado_test.postulante_id', $postulante_id)
-            ->where('resultado_test.test_id', $test->test_id)
+            ->where('resultado_test.test_evaluacion_id', $test->test_id)
             ->first();
         //seccion de preguntas
         $preguntas = DB::table('pregunta')
@@ -288,7 +294,7 @@ class ResultadoEvaluacion extends Controller
 
         $test->resultados_test = DB::table('resultado_test')
             ->where('resultado_test.postulante_id', $postulante_id)
-            ->where('resultado_test.test_id', $test->test_id)
+            ->where('resultado_test.test_evaluacion_id', $test->test_id)
             ->first();
         //seccion de preguntas
         $preguntas = DB::table('pregunta')
@@ -359,7 +365,7 @@ class ResultadoEvaluacion extends Controller
 
         $test->resultados_test = DB::table('resultado_test')
             ->where('resultado_test.postulante_id', $postulante_id)
-            ->where('resultado_test.test_id', $test->test_id)
+            ->where('resultado_test.test_evaluacion_id', $test->test_id)
             ->first();
         //seccion de preguntas
         $preguntas = DB::table('pregunta')
@@ -409,9 +415,9 @@ class ResultadoEvaluacion extends Controller
             //dump($preguntasExport);
             $preguntasExport[] = $data;
         }
-        /* 
+        /*
         return response()->json([
-            'data' => [$preguntasExport],
+        'data' => [$preguntasExport],
         ], 200); */
         $nombreDocumento = $test->nombre . ' ' . $test->apellidos . ' - ' . $test->nombreTest . ' ' . date('d-m-Y', strtotime($test->resultados_test->fecha_inicio)) . '.xlsx';
         return $this->excel->download(new exportSeleccionUnicaPlantilla($test, $preguntasExport), $nombreDocumento);
