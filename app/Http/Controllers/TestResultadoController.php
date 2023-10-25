@@ -39,7 +39,7 @@ class TestResultadoController extends Controller
             ->first();
 
         $verificar_test = DB::table('resultado_test')
-            ->where('resultado_test.test_evaluacion_id', $test->test_id)
+            ->where('resultado_test.test_evaluacion_id', $test->test_evaluacion_id)
             ->where('resultado_test.postulante_id', $request->user()->postulante_id)
             ->first();
 

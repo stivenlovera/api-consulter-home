@@ -156,44 +156,63 @@ class ResultadoEvaluacion extends Controller
             ->where('pregunta.test_id', $test->test_id)
             ->get();
         foreach ($preguntas as $key => $pregunta) {
-            $respuestas = DB::table('respuesta')
-                ->where('respuesta.pregunta_id', $pregunta->pregunta_id)
-                ->get();
-
+            //dd($respuestas);
             $respuestas_preguntas = DB::table('resultado_pregunta')
                 ->where('resultado_pregunta.pregunta_id', $pregunta->pregunta_id)
                 ->where('resultado_pregunta.resultado_test_id', $test->resultados_test->resultado_test_id)
                 ->first();
 
+            $respuestas = DB::table('resultado_pregunta')
+                ->select('respuesta.*')
+                ->join('resultado_respuesta', 'resultado_respuesta.resultado_pregunta_id', 'resultado_pregunta.resultado_pregunta_id')
+                ->join('respuesta', 'respuesta.respuesta_id', 'resultado_respuesta.respuesta_id')
+                ->where('resultado_pregunta.resultado_pregunta_id', $respuestas_preguntas->resultado_pregunta_id)
+                ->where('resultado_pregunta.pregunta_id', $pregunta->pregunta_id)
+                ->get();
+
             $pregunta->resultados_pregunta = $respuestas_preguntas;
             $pregunta->respuestas = $respuestas;
 
             foreach ($respuestas as $key => $respuesta) {
-                //dd($pregunta, $respuesta);
+
                 $resultado_respuesta = DB::table('resultado_respuesta')
                     ->where('resultado_respuesta.respuesta_id', $respuesta->respuesta_id)
                     ->where('resultado_respuesta.resultado_pregunta_id', $pregunta->resultados_pregunta->resultado_pregunta_id)
+                    ->orderBy('resultado_respuesta.resultado_respuesta_id', 'ASC')
                     ->first();
+
                 $respuesta->resultados_respuesta = $resultado_respuesta;
             }
+            $respuestas = DB::table('respuesta')
+                ->where('respuesta.pregunta_id', $pregunta->pregunta_id)
+                ->get();
+
         }
-        //dd( $preguntas);
+        //dd($preguntas);
         $nombreDocumento = $test->nombre . ' ' . $test->apellidos . ' - ' . $test->nombreTest . ' ' . date('d-m-Y', strtotime($test->resultados_test->fecha_inicio)) . '.pdf';
         switch ($test->tipo_preguntas_id) {
             case 1:
                 $pdf = PDF::loadView('resultados_test.criterio', compact('test', 'preguntas'))->setPaper('letter')->setWarnings(false);
                 return $pdf->download($nombreDocumento);
-
             case 4:
                 $pdf = PDF::loadView('resultados_test.dibujo', compact('test', 'preguntas'))->setPaper('letter')->setWarnings(false);
                 return $pdf->download($nombreDocumento);
             case 6:
                 $pdf = PDF::loadView('resultados_test.roshard', compact('test', 'preguntas'))->setPaper('letter')->setWarnings(false);
                 return $pdf->download($nombreDocumento);
-
+            case 12:
+                $pdf = PDF::loadView('resultados_test.ordenar-imagenes', compact('test', 'preguntas'))->setPaper('letter')->setWarnings(false);
+                return $pdf->download($nombreDocumento);
+            case 13:
+                $pdf = PDF::loadView('resultados_test.ordenar-imagenes', compact('test', 'preguntas'))->setPaper('letter')->setWarnings(false);
+                return $pdf->download($nombreDocumento);
             default:
                 break;
         }
+    }
+    public function ordenar($lista)
+    {
+
     }
     public function ResultadoSeleccionUnica($evaluacion_id, $postulante_id, $test_evaluacion_id, $resultado_test_id)
     {
