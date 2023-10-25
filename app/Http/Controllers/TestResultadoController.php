@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use DB;
 use Illuminate\Http\Request;
 use Image;
+use DateTime;
 
 class TestResultadoController extends Controller
 {
@@ -30,7 +31,8 @@ class TestResultadoController extends Controller
             ->first();
         $test = DB::table('test_evaluacion')
             ->select(
-                'test.*'
+                'test.*',
+                'test_evaluacion_id'
             )
             ->join('test', 'test.test_id', 'test_evaluacion.test_id')
             ->where('test_evaluacion.test_id', $test_id)
@@ -38,7 +40,7 @@ class TestResultadoController extends Controller
             ->first();
 
         $verificar_test = DB::table('resultado_test')
-            ->where('resultado_test.test_id', $test->test_id)
+            ->where('resultado_test.test_evaluacion_id', $test->test_evaluacion_id)
             ->where('resultado_test.postulante_id', $request->user()->postulante_id)
             ->first();
 
@@ -69,19 +71,33 @@ class TestResultadoController extends Controller
         $resultado_test_id;
         if ($verificar_test) {
             $resultado_test_id = $verificar_test->resultado_test_id;
+            $test->fecha_inicio = $verificar_test->fecha_inicio;
         } else {
             $creacionTetsResultado = DB::table('resultado_test')->insertGetId([
-                'test_id' => $test_id,
+                'test_evaluacion_id' => $test->test_evaluacion_id,
                 'fecha_inicio' => date('Y-m-d H:i:s'),
                 'resultado_test.postulante_id' => $request->user()->postulante_id,
             ]);
             $resultado_test_id = $creacionTetsResultado;
+            $test->fecha_inicio = date('Y-m-d H:i:s');
         }
 
         $test->preguntas = $preguntas;
         $test->pasos = $procedimientos;
-        $test->test_resultado = $resultado_test_id;
-        $test->fecha_inicio = $verificar_test->fecha_inicio;
+        $test->resultado_test_id = $resultado_test_id;
+        if ($test->tiempo_total == 0) {
+            $test->activarTiempo = false;
+            $test->tiempoTranscurrido = 0;
+        } else {
+            $test->activarTiempo = true;
+            $tiempoTranscurrido = $this->TimeTrasncurridoToMinute($test->fecha_inicio);
+            if ($tiempoTranscurrido > ($test->tiempo_total)) {
+                $test->tiempoTranscurrido = 0;
+            } else {
+                $test->tiempoTranscurrido = ($test->tiempo_total) - $tiempoTranscurrido;
+            }
+        }
+        //dd( $test);
         $test->fecha_sistema = date('Y-m-d H:i:s');
         return response()->json([
             'status' => 1,
@@ -89,7 +105,17 @@ class TestResultadoController extends Controller
             'data' => $test,
         ], 200);
     }
-
+    public function TimeTrasncurridoToMinute($fecha_inicio)
+    {
+        $date1 = new DateTime(date('Y-m-d H:i:s'));
+        $date2 = new DateTime(date($fecha_inicio));
+        $diff = $date1->diff($date2);
+        $totalSegundo = $diff->s;
+        $totalSegundo = ($diff->i * 60) + $totalSegundo;
+        $totalSegundo = ($diff->h * 3600) + $totalSegundo;
+        $totalSegundo = ($diff->d * 86400) + $totalSegundo;
+        return $totalSegundo;
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -98,14 +124,16 @@ class TestResultadoController extends Controller
      */
     public function store(Request $request)
     {
-        $resultadoTest = DB::table('resultado_test')->update([
-            'test_id' => $request->test_id,
-            'resultado_test.postulante_id' => $request->user()->postulante_id,
-        ])
-            ->where('resultado_test.resultado_test_id', $request->resultado_test_id);
+        $resultadoTest = DB::table('resultado_test')
+            ->where('resultado_test.resultado_test_id', $request->resultado_test_id)
+            ->update([
+                'resultado_test.postulante_id' => $request->user()->postulante_id,
+                'estado' => 1,
+            ]);
+
         foreach ($request->respuestaPreguntas as $key => $pregunta) {
             $resultadoPregunta = DB::table('resultado_pregunta')->insertGetId([
-                'resultado_test_id' => $resultadoTest,
+                'resultado_test_id' => $request->resultado_test_id,
                 'pregunta_id' => $pregunta['pregunta_id'],
                 'fecha_inicio' => $pregunta['fecha_inicio'],
                 'tiempo_duracion' => $pregunta['tiempo_duracion'],

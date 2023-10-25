@@ -142,6 +142,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 });
 Route::prefix('resultado-report')->group(function () {
-    Route::get('/report_pdf/{evaluacion_id}/{postulante_id}/{test_id}', [ResultadoEvaluacion::class, 'report_pdf']);
-    Route::get('/report_excel/{evaluacion_id}/{postulante_id}/{test_id}', [ResultadoEvaluacion::class, 'ResultadoSeleccionUnica']);
+    Route::get('/report_pdf/{evaluacion_id}/{postulante_id}/{test_evaluacion_id}/{resultado_test_id}', [ResultadoEvaluacion::class, 'report_pdf']);
+    Route::get('/report_excel/{evaluacion_id}/{postulante_id}/{test_evaluacion_id}/{resultado_test_id}', [ResultadoEvaluacion::class, 'ResultadoSeleccionUnica']);
 });

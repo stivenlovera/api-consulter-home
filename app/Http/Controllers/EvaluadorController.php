@@ -21,14 +21,15 @@ class EvaluadorController extends Controller
             ->first();
         $tests = DB::table('test')
             ->select(
-                'test.*'
+                'test.*',
+                'test_evaluacion.test_evaluacion_id'
             )
             ->join('test_evaluacion', 'test_evaluacion.test_id', 'test.test_id')
             ->where('test_evaluacion.evaluacion_id', $evaluacion->evaluacion_id)
             ->get();
         foreach ($tests as $key => $test) {
             $verificar_test = DB::table('resultado_test')
-                ->where('resultado_test.test_id', $test->test_id)
+                ->where('resultado_test.test_evaluacion_id', $test->test_evaluacion_id)
                 ->where('resultado_test.postulante_id', $request->user()->postulante_id)
                 ->first();
             if ($verificar_test) {
