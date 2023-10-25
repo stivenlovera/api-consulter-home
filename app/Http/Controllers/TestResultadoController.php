@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use DB;
 use Illuminate\Http\Request;
 use Image;
+use DateTime;
 
 class TestResultadoController extends Controller
 {
@@ -84,7 +85,19 @@ class TestResultadoController extends Controller
         $test->preguntas = $preguntas;
         $test->pasos = $procedimientos;
         $test->resultado_test_id = $resultado_test_id;
-     
+        if ($test->tiempo_total == 0) {
+            $test->activarTiempo = false;
+            $test->tiempoTranscurrido = 0;
+        } else {
+            $test->activarTiempo = true;
+            $tiempoTranscurrido = $this->TimeTrasncurridoToMinute($test->fecha_inicio);
+            if ($tiempoTranscurrido > ($test->tiempo_total)) {
+                $test->tiempoTranscurrido = 0;
+            } else {
+                $test->tiempoTranscurrido = ($test->tiempo_total) - $tiempoTranscurrido;
+            }
+        }
+        //dd( $test);
         $test->fecha_sistema = date('Y-m-d H:i:s');
         return response()->json([
             'status' => 1,
@@ -92,7 +105,17 @@ class TestResultadoController extends Controller
             'data' => $test,
         ], 200);
     }
-
+    public function TimeTrasncurridoToMinute($fecha_inicio)
+    {
+        $date1 = new DateTime(date('Y-m-d H:i:s'));
+        $date2 = new DateTime(date($fecha_inicio));
+        $diff = $date1->diff($date2);
+        $totalSegundo = $diff->s;
+        $totalSegundo = ($diff->i * 60) + $totalSegundo;
+        $totalSegundo = ($diff->h * 3600) + $totalSegundo;
+        $totalSegundo = ($diff->d * 86400) + $totalSegundo;
+        return $totalSegundo;
+    }
     /**
      * Store a newly created resource in storage.
      *
