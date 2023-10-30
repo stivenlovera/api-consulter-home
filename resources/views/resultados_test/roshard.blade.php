@@ -50,43 +50,44 @@
                         </td>
                         @forelse ($pregunta->respuestas as $key => $respuesta)
                             <td class="desc">
-                                @if ($key > 0)
+                                @if ($key == 0 || $key == 2)
                                     <p style="padding-left: 15%;"><strong>
                                             {{ $respuesta->descripcion }}
                                         </strong></p>
                                     <p style="padding-left: 15%;"> {{ $respuesta->resultados_respuesta->descripcion }}
                                     </p>
                                 @else
+                                    <p><strong>Donde lo ve</strong></p>
                                     <table>
                                         <tbody>
                                             <tr>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-                                                    
-                                                </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
+                                                <td style="text-align: center;  border: 1px solid #000000; ">
 
                                                 </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
+                                                <td style="text-align: center;  border: 1px solid #000000; ">
 
                                                 </td>
-                                            <tr>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-
-                                                </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-
-                                                </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
+                                                <td style="text-align: center;  border: 1px solid #000000; ">
 
                                                 </td>
                                             <tr>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
+                                                <td style="text-align: center;  border: 1px solid #000000; ">
 
                                                 </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
+                                                <td style="text-align: center;  border: 1px solid #000000; ">
 
                                                 </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
+                                                <td style="text-align: center;  border: 1px solid #000000; ">
+
+                                                </td>
+                                            <tr>
+                                                <td style="text-align: center;  border: 1px solid #000000; ">
+
+                                                </td>
+                                                <td style="text-align: center;  border: 1px solid #000000; ">
+
+                                                </td>
+                                                <td style="text-align: center;  border: 1px solid #000000; ">
 
                                                 </td>
                                             </tr>
