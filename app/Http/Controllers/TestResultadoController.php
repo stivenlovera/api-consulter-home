@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use DateTime;
 use DB;
 use Illuminate\Http\Request;
 use Image;
-use DateTime;
 
 class TestResultadoController extends Controller
 {
@@ -105,6 +105,62 @@ class TestResultadoController extends Controller
             'data' => $test,
         ], 200);
     }
+    public function ejemplo(Request $request, $test_id, $postulante_id, $evaluacion_id)
+    {
+        $evaluacion = DB::table('postulante_evaluacion')
+            ->where('postulante_id', $postulante_id)
+            ->first();
+        $test = DB::table('test')
+            ->select(
+                'test.*',
+            )
+            ->where('test.test_id', $test_id)
+            ->first();
+
+        $test->completado = 'no';
+        $preguntas = DB::table('pregunta')
+            ->where('pregunta.test_id', $test->test_id)
+            ->get();
+
+        $procedimientos = DB::table('procedimiento')
+            ->where('procedimiento.test_id', $test->test_id)
+            ->get();
+
+        foreach ($preguntas as $key => $pregunta) {
+            $respuestas = DB::table('respuesta')
+                ->where('respuesta.pregunta_id', $pregunta->pregunta_id)
+                ->get();
+            $pregunta->respuestas = $respuestas;
+        }
+        //validar si existe
+        $resultado_test_id;
+
+        $resultado_test_id = 0;
+        $test->fecha_inicio = date('Y-m-d H:i:s');
+
+        $test->preguntas = $preguntas;
+        $test->pasos = $procedimientos;
+        $test->resultado_test_id = $resultado_test_id;
+        if ($test->tiempo_total == 0) {
+            $test->activarTiempo = false;
+            $test->tiempoTranscurrido = 0;
+        } else {
+            $test->activarTiempo = true;
+            $tiempoTranscurrido = $this->TimeTrasncurridoToMinute($test->fecha_inicio);
+            if ($tiempoTranscurrido > ($test->tiempo_total)) {
+                $test->tiempoTranscurrido = 0;
+            } else {
+                $test->tiempoTranscurrido = ($test->tiempo_total) - $tiempoTranscurrido;
+            }
+        }
+        //dd( $test);
+        $test->fecha_sistema = date('Y-m-d H:i:s');
+        return response()->json([
+            'status' => 1,
+            'message' => 'Test a resolver',
+            'data' => $test,
+        ], 200);
+    }
     public function TimeTrasncurridoToMinute($fecha_inicio)
     {
         $date1 = new DateTime(date('Y-m-d H:i:s'));
@@ -124,10 +180,13 @@ class TestResultadoController extends Controller
      */
     public function store(Request $request)
     {
+        $fechaInicio = DB::table('resultado_test')->where('resultado_test.resultado_test_id', $request->resultado_test_id)->first();
+        $segundos = strtotime(date('Y-m-d H:i:s')) - strtotime($fechaInicio->fecha_inicio);
         $resultadoTest = DB::table('resultado_test')
             ->where('resultado_test.resultado_test_id', $request->resultado_test_id)
             ->update([
                 'resultado_test.postulante_id' => $request->user()->postulante_id,
+                'tiempo_transcurrido' => $segundos,
                 'estado' => 1,
             ]);
 

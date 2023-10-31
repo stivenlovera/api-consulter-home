@@ -41,6 +41,13 @@ class EvaluadorController extends Controller
             } else {
                 $test->completado = 'no';
             }
+            $test_ejemplo=DB::table('test_ejemplo')->where('test_id',$test->test_id)->first();
+            if ($test_ejemplo) {
+                $test->ejemplo_test_id = $test_ejemplo->ejemplo_id;
+            }
+            else {
+                $test->ejemplo_test_id =0;
+            }
         }
         $persona = DB::table('postulante')
             ->where('postulante_id', $request->user()->postulante_id)
@@ -48,6 +55,7 @@ class EvaluadorController extends Controller
         $cargo = DB::table('cargo')
             ->where('cargo_id', $evaluacion->cargo_id)
             ->first();
+       
         return response()->json([
             'status' => 1,
             'message' => 'Lista de test disponibles',
@@ -58,7 +66,7 @@ class EvaluadorController extends Controller
                 'cargo' => $cargo->nombreCargo,
                 'fechaFinal' => date('Y-m-d', strtotime($evaluacion->fechafin)),
                 'fechaInicio' => date('Y-m-d', strtotime($evaluacion->fechaInicio)),
-                'evaluacion_id' => $evaluacion->evaluacion_id,
+                'evaluacion_id' => $evaluacion->evaluacion_id
             ],
         ], 200);
     }
