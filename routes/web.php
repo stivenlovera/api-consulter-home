@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Route;
  */
 
 Route::get('/', function () {
-    return response(public_path('frontend.index.html'), 200)->header('Content-Type', 'text/html');
+    return response()->json([
+        'status' => 1,
+        'message' => ' conectado api resuelta ',
+        'data' => [
+            'test' => true,
+        ],
+    ], 200);
 
 });
