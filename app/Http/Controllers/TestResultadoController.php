@@ -18,7 +18,48 @@ class TestResultadoController extends Controller
     {
         //
     }
+    public function ejemplo(Request $request, $test_id, $postulante_id, $evaluacion_id)
+    {
+        $test = DB::table('test')
+            ->select(
+                'test.*'
+            )
+            ->where('test.test_id', $test_id)
+            ->first();
 
+        $test->completado = 'no';
+
+        $preguntas = DB::table('pregunta')
+            ->where('pregunta.test_id', $test->test_id)
+            ->get();
+
+        $procedimientos = DB::table('procedimiento')
+            ->where('procedimiento.test_id', $test->test_id)
+            ->get();
+
+        foreach ($preguntas as $key => $pregunta) {
+            $respuestas = DB::table('respuesta')
+                ->where('respuesta.pregunta_id', $pregunta->pregunta_id)
+                ->get();
+            $pregunta->respuestas = $respuestas;
+        }
+
+        $test->activarTiempo = false;
+        $test->tiempoTranscurrido = 0;
+
+        $test->resultado_test_id = 0;
+        //////////
+        $test->preguntas = $preguntas;
+        $test->pasos = $procedimientos;
+        $test->resultado_test_id = 0;
+        $test->fecha_inicio = 0;
+        $test->fecha_sistema = date('Y-m-d H:i:s');
+        return response()->json([
+            'status' => 1,
+            'message' => 'Test de ejemplo',
+            'data' => $test,
+        ], 200);
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -146,7 +187,7 @@ class TestResultadoController extends Controller
                     'resultado_pregunta_id' => $resultadoPregunta,
                     'respuesta_id' => $respuesta['respuesta_id'],
                     'descripcion' => $imagenRespuesta,
-                    'valor' => $respuesta['valor'],
+                    'valor' => $respuesta['valor']==null ? '' : $respuesta['valor'],
                 ]);
             }
         }

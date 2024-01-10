@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\exportSeleccionUnicaPlantilla;
 use App\Exports\exportSelecionUnica;
+use App\Exports\plantilla\Edwards;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -216,8 +217,6 @@ class ResultadoEvaluacion extends Controller
     }
     public function ResultadoSeleccionUnica($evaluacion_id, $postulante_id, $test_evaluacion_id, $resultado_test_id)
     {
-        $preguntasExport = [];
-
         $test = DB::table('test_evaluacion')
             ->select(
                 'postulante.*',
@@ -236,49 +235,52 @@ class ResultadoEvaluacion extends Controller
 
         $test->resultados_test = DB::table('resultado_test')
             ->where('resultado_test.postulante_id', $postulante_id)
-            ->where('resultado_test.test_evaluacion_id', $test->test_id)
+            ->where('resultado_test.test_evaluacion_id', $test_evaluacion_id)
+            ->where('resultado_test.resultado_test_id', $resultado_test_id)
             ->first();
         //seccion de preguntas
         $preguntas = DB::table('pregunta')
             ->where('pregunta.test_id', $test->test_id)
             ->get();
-        foreach ($preguntas as $i => $pregunta) {
-            $data = new \stdClass();
-
-            $data->nro = $i + 1;
-            $data->pregunta = $pregunta->pregunta_nombre;
-
-            $respuestas = DB::table('respuesta')
-                ->where('respuesta.pregunta_id', $pregunta->pregunta_id)
-                ->get();
+        foreach ($preguntas as $key => $pregunta) {
+            //dd($respuestas);
             $respuestas_preguntas = DB::table('resultado_pregunta')
                 ->where('resultado_pregunta.pregunta_id', $pregunta->pregunta_id)
                 ->where('resultado_pregunta.resultado_test_id', $test->resultados_test->resultado_test_id)
                 ->first();
 
+            $respuestas = DB::table('resultado_pregunta')
+                ->select('respuesta.*')
+                ->join('resultado_respuesta', 'resultado_respuesta.resultado_pregunta_id', 'resultado_pregunta.resultado_pregunta_id')
+                ->join('respuesta', 'respuesta.respuesta_id', 'resultado_respuesta.respuesta_id')
+                ->where('resultado_pregunta.resultado_pregunta_id', $respuestas_preguntas->resultado_pregunta_id)
+                ->where('resultado_pregunta.pregunta_id', $pregunta->pregunta_id)
+                ->get();
+
             $pregunta->resultados_pregunta = $respuestas_preguntas;
             $pregunta->respuestas = $respuestas;
 
             foreach ($respuestas as $key => $respuesta) {
+
                 $resultado_respuesta = DB::table('resultado_respuesta')
                     ->where('resultado_respuesta.respuesta_id', $respuesta->respuesta_id)
                     ->where('resultado_respuesta.resultado_pregunta_id', $pregunta->resultados_pregunta->resultado_pregunta_id)
+                    ->orderBy('resultado_respuesta.resultado_respuesta_id', 'ASC')
                     ->first();
-                if ($resultado_respuesta->valor == '1') {
-                    $data->si = '1';
-                    $data->no = '';
-                    break;
-                } else {
-                    $data->si = '';
-                    $data->no = '1';
-                    break;
-                }
-                $respuesta->resultados_respuesta = $resultado_respuesta;
-                //dump($resultado_respuesta->valor,$data);
-            }
 
-            $preguntasExport[] = $data;
+                $respuesta->resultados_respuesta = $resultado_respuesta;
+            }
+            $respuestas = DB::table('respuesta')
+                ->where('respuesta.pregunta_id', $pregunta->pregunta_id)
+                ->get();
+
         }
+        $test->resultados_test->preguntas = $preguntas;
+        //dd($test->resultados_test->preguntas);
+
+        $nombreDocumento = $test->nombre . ' ' . $test->apellidos . ' - ' . $test->nombreTest . ' ' . date('d-m-Y', strtotime($test->resultados_test->fecha_inicio)) . '.xlsx';
+        return $this->excel->download(new Edwards($test), $nombreDocumento);
+
         $nombreDocumento = $test->nombre . ' ' . $test->apellidos . ' - ' . $test->nombreTest . ' ' . date('d-m-Y', strtotime($test->resultados_test->fecha_inicio)) . '.xlsx';
         switch ($test->tipo_preguntas_id) {
 
@@ -286,13 +288,18 @@ class ResultadoEvaluacion extends Controller
                 return $this->excel->download(new exportSelecionUnica($test, $preguntasExport), $nombreDocumento);
                 break;
             case 10:
-                return $this->ResultadoSeleccionUnicaPlantilla($evaluacion_id, $postulante_id, $test_id);
+                return $this->ResultadoSeleccionUnicaPlantilla($evaluacion_id, $postulante_id, $test->test_id);
                 break;
             default:
                 return $this->excel->download(new exportSelecionUnica($test, $preguntasExport), $nombreDocumento);
                 break;
         }
     }
+    public function convertEdwards()
+    {
+
+    }
+
     public function ResultadoSeleccionUnicaPlantilla($evaluacion_id, $postulante_id, $test_id)
     {
         $test = DB::table('test_evaluacion')

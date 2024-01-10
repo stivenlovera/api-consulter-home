@@ -124,6 +124,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('test-resultado')->group(function () {
         Route::get('/', [TestResultadoController::class, 'index']);
         Route::get('/create/{test_id}/{postulante_id}/{evaluacion_id}', [TestResultadoController::class, 'create']);
+        Route::get('/ejemplo/{test_id}/{postulante_id}/{evaluacion_id}', [TestResultadoController::class, 'ejemplo']);
         Route::post('/{test_id}/{postulante_id}', [TestResultadoController::class, 'store']);
         Route::get('/edit/{id}', [TestResultadoController::class, 'show']);
         Route::get('/show/{id}', [TestResultadoController::class, 'edit']);
@@ -132,6 +133,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     Route::prefix('resultado-evaluacion')->group(function () {
         Route::post('/{test_id}/{postulante_id}', [ResultadoEvaluacion::class, 'store']);
+
         Route::get('/edit/{id}', [ResultadoEvaluacion::class, 'show']);
         Route::get('/show/{id}', [ResultadoEvaluacion::class, 'edit']);
         Route::put('/{id}', [ResultadoEvaluacion::class, 'update']);
