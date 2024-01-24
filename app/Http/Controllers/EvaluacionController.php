@@ -60,7 +60,7 @@ class EvaluacionController extends Controller
         $empresas = DB::table('empresa')->get();
         $postulantes = DB::table('postulante')
             ->select('postulante.*')
-            ->where('postulante_evaluacion.evaluacion_id', null)
+            //->where('postulante_evaluacion.evaluacion_id', null)
             ->leftJoin('postulante_evaluacion', 'postulante_evaluacion.postulante_id', 'postulante.postulante_id')
             ->get();
         $estados = DB::table('estado')->get();
