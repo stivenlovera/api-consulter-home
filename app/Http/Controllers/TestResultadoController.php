@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use DateTime;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Image;
-use DateTime;
+//use App\Models\User;
 
 class TestResultadoController extends Controller
 {
@@ -165,6 +167,9 @@ class TestResultadoController extends Controller
      */
     public function store(Request $request)
     {
+        $postulante_id =$request->user()->postulante_id;
+
+        Log::info("TestResultadoController/store({$postulante_id},{$request->getContent()})");
         $resultadoTest = DB::table('resultado_test')
             ->where('resultado_test.resultado_test_id', $request->resultado_test_id)
             ->update([
@@ -187,7 +192,7 @@ class TestResultadoController extends Controller
                     'resultado_pregunta_id' => $resultadoPregunta,
                     'respuesta_id' => $respuesta['respuesta_id'],
                     'descripcion' => $imagenRespuesta,
-                    'valor' => $respuesta['valor']==null ? '' : $respuesta['valor'],
+                    'valor' => $respuesta['valor'] == null ? '' : $respuesta['valor'],
                 ]);
             }
         }
@@ -285,3 +290,19 @@ class TestResultadoController extends Controller
 
     }
 }
+/* 
+C:\laragon\www\api-consulter-home\public\assets\respuestas
+http://localhost/api-consulter-home/public/assets/respuestas/image-respuestas-651b0ce04e5c11696271584.jpg
+http://localhost/api-consulter-home/public/assets/respuestas/image-respuestas-651b0ce0e223f1696271584.jpg
+http://localhost/api-consulter-home/public/assets/respuestas/image-respuestas-651b0ce183e071696271585.jpg
+http://localhost/api-consulter-home/public/assets/respuestas/image-respuestas-651b0ce2219851696271586.jpg
+http://localhost/api-consulter-home/public/assets/respuestas/image-respuestas-651b0ce2b378d1696271586.jpg
+
+
+http://localhost/api-consulter-home/public/assets/respuestas/image-respuestas-651b0ce3c98c01696271587.jpg
+http://localhost/api-consulter-home/public/assets/respuestas/image-respuestas-651b0ce4ac5401696271588.jpg
+http://localhost/api-consulter-home/public/assets/respuestas/image-respuestas-651b0ce5915a81696271589.jpg
+http://localhost/api-consulter-home/public/assets/respuestas/image-respuestas-651b0ce76d9361696271591.jpg
+http://localhost/api-consulter-home/public/assets/respuestas/image-respuestas-651b0ce7edadd1696271591.jpg
+
+*/

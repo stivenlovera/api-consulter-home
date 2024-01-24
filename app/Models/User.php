@@ -42,4 +42,8 @@ class User extends Authenticatable
      *
      * @var array<string, string>
      */
+    public function resolverToken()
+    {
+        dd(auth()->user());
+    }
 }
