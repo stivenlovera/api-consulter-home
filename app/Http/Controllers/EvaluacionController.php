@@ -194,7 +194,7 @@ class EvaluacionController extends Controller
         $empresas = DB::table('empresa')->get();
         $postulantes = DB::table('postulante')
             ->select('postulante.*')
-            ->where('postulante.estadoPostulanteId', 1)
+            //->where('postulante.estadoPostulanteId', 1)
             ->get();
         $estados = DB::table('estado')->get();
 
