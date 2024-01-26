@@ -21,93 +21,96 @@
 <body>
     <x-pdf.header />
     <x-pdf.footer />
-    <h2>Resultado Test {{ $test->nombreTest }}</h2>
+    <h2>Resultado Test {{ $resultado_test->nombreTest }}</h2>
     <div>
         <div>
-            <p style="margin: 0"><strong>Nombres: </strong>{{ $test->nombre }} {{ $test->apellidos }}</p>
+            <p style="margin: 0"><strong>Nombres: </strong>{{ $postulante->nombre }} {{ $postulante->apellidos }}</p>
         </div>
         <div>
             <p style="margin: 0"><strong>Total: </strong> </p>
         </div>
         <div>
-            <p style="margin: 0"><strong>Puesto: </strong> {{ $test->nombreCargo }}</p>
+            <p style="margin: 0"><strong>Puesto: </strong> {{ $postulante->nombreCargo }}</p>
         </div>
         <div>
             <p style="margin: 0"><strong>Fecha de evaluacion: </strong>
-                {{ date('d/m/Y H:m:s a', strtotime($test->resultados_test->fecha_inicio)) }}</p>
+                {{ date('d/m/Y H:m:s a', strtotime($resultado_test->fecha_inicio)) }}</p>
         </div>
         <table>
             <thead>
                 <tr>
-                    <th colspan="2" width="50" style="font-size: 15px;"></th>
+                    <th colspan="3" width="50" style="font-size: 15px;"></th>
                 </tr>
             </thead>
             <tbody>
-                @forelse ($preguntas as $i =>  $pregunta)
+                @forelse ($resultado_test->preguntas as $i =>  $pregunta)
                     <tr>
-                        <td class="desc">
+                        <td class="desc" colspan="3">
                             <p><strong>{{ $i + 1 }}. {{ $pregunta->pregunta_nombre }}</Strong></p>
                         </td>
+                    </tr>
+                    <tr>
                         @forelse ($pregunta->respuestas as $key => $respuesta)
-                            <td class="desc">
-                                @if ($key > 0)
-                                    <p style="padding-left: 15%;"><strong>
-                                            {{ $respuesta->descripcion }}
+                            @if ($key == 0)
+                                <td class="desc">
+                                    <p><strong>
+                                            Que es lo que ve?
                                         </strong></p>
-                                    <p style="padding-left: 15%;"> {{ $respuesta->resultados_respuesta->descripcion }}
+                                    <p>
+                                        {{ $respuesta->valor }}
+                                        {{ $i == 1 ? 'SDASDASDASD ASDASDA ASDASD ASDA SASDASDA ASDASDA S' : '' }}
                                     </p>
-                                @else
+                                </td>
+                            @endif
+                            @if ($key == 2)
+                                <td class="desc">
+                                    <p><strong>
+                                            Donde lo ve?
+                                        </strong></p>
+                                    <p>
+                                        {{ $respuesta->valor }}
+                                    </p>
+                                </td>
+                            @endif
+                            @if ($key == 1)
+                                <td class="desc">
                                     <table>
                                         <tbody>
-                                            <tr>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-                                                    
-                                                </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-
-                                                </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-
-                                                </td>
-                                            <tr>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-
-                                                </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-
-                                                </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-
-                                                </td>
-                                            <tr>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-
-                                                </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-
-                                                </td>
-                                                <td  style="text-align: center;  border: 1px solid #000000; ">
-
-                                                </td>
-                                            </tr>
+                                            @php
+                                                $count = 0;
+                                                $posiciones = explode(',', $respuesta->descripcion);
+                                            @endphp
+                                            @for ($i = 1; $i <= 3; $i++)
+                                                <tr>
+                                                    @for ($j = 1; $j <= 3; $j++)
+                                                        {{ $count++ }}
+                                                        @if (!empty($posiciones[$count - 1]))
+                                                            <td
+                                                                style="text-align: center;  border: 1px solid #000000; ">
+                                                                X
+                                                            </td>
+                                                        @else
+                                                            <td
+                                                                style="text-align: center; height: 8px; width: 8px;border: 1px solid #000000;">
+                                                            </td>
+                                                        @endif
+                                                    @endfor
+                                                </tr>
+                                            @endfor
                                         </tbody>
                                     </table>
-                                @endif
-                            </td>
+                                </td>
+                            @endif
+                        @empty
+                        @endforelse
                     </tr>
                 @empty
-                    <p>
-                        <br>
-                    </p>
-                @endforelse
-            @empty
-                <tr>
-                    <td colspan="4"></td>
-                </tr>
+                    <tr>
+                        <td colspan="2"></td>
+                    </tr>
                 @endforelse
             </tbody>
         </table>
-
     </div>
 </body>
 

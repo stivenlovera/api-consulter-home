@@ -9,7 +9,7 @@ use Maatwebsite\Excel\Events\BeforeExport;
 use Maatwebsite\Excel\Excel;
 use stdClass;
 
-class Eysenck implements
+class Mmpi implements
 WithEvents
 {
     private $resultado_test;
@@ -27,27 +27,25 @@ WithEvents
             BeforeExport::class => function (BeforeExport $event) {
 
                 //$event->writer->getProperties()->setCreator('Patrick');
-                $event->writer->reopen(new \Maatwebsite\Excel\Files\LocalTemporaryFile(storage_path() . '/plantillas/' . 'EYSENCK FORMA B-.xlsx'), Excel::XLSX);
+                $event->writer->reopen(new \Maatwebsite\Excel\Files\LocalTemporaryFile(storage_path() . '/plantillas/' . 'MMPI-SOFTWARE.xlsx'), Excel::XLSX);
                 $event->writer->getSheetByIndex(0);
                 $preguntas_excel = $this->listaPreguntas();
+                //dd($preguntas_excel);
                 //dd($this->resultado_test,$this->postulante);
-                $event->getWriter()->getSheetByIndex(0)->setCellValue('E4', $this->postulante->nombre . ' ' . $this->postulante->apellidos);
-                $event->getWriter()->getSheetByIndex(0)->setCellValue('H4', (date('Y') - date('Y', strtotime($this->postulante->fecha_nacimiento))));
-                $event->getWriter()->getSheetByIndex(0)->setCellValue('E6', date('d/m/Y', strtotime($this->postulante->fecha_nacimiento)));
                 // fill with information
                
                 foreach ($this->resultado_test->preguntas as $key => $pregunta) {
                     foreach ($pregunta->respuestas as $i => $respuesta) {
                         if ($i == 0) {
                             if ($respuesta->valor == '1') {
-                                $event->getWriter()->getSheetByIndex(0)->setCellValue( $preguntas_excel[$key]->si, '1');
+                                $event->getWriter()->getSheetByIndex(0)->setCellValue( $preguntas_excel[$key]->cierto, '1');
                             }
                             //dump($preguntas_excel[$key]->a, '1');
                         }
                         if ($i == 1) {
                             //dump($preguntas_excel[$key]->b, '1');
                             if ($respuesta->valor == '1') {
-                                $event->getWriter()->getSheetByIndex(0)->setCellValue($preguntas_excel[$key]->no, '1');
+                                $event->getWriter()->getSheetByIndex(0)->setCellValue($preguntas_excel[$key]->falso, '1');
                             }
                         }
                     }
@@ -60,11 +58,11 @@ WithEvents
     public function listaPreguntas()
     {
         $resultado = [];
-        $row = 13;
-        while ($row <= 69) {
+        $row = 2;
+        while ($row <= 77) {
             $posisiones = new stdClass;
-            $posisiones->si='H'.$row;
-            $posisiones->no='I'.$row;
+            $posisiones->cierto='C'.$row;
+            $posisiones->falso='D'.$row;
             $resultado[] = $posisiones;
             $row++;
         }
