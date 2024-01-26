@@ -144,13 +144,13 @@ class ResultadoEvaluacion extends Controller
         switch ($resultado_test->tipo_preguntas_id) {
             case 1:
                 $pdf = PDF::loadView('resultados_test.criterio', compact('resultado_test', 'postulante'))->setPaper('letter')->setWarnings(false);
-                return $pdf->stream($nombreDocumento);
+                return $pdf->download($nombreDocumento);
             case 4:
                 $pdf = PDF::loadView('resultados_test.dibujo', compact('resultado_test', 'postulante'))->setPaper('letter')->setWarnings(false);
-                return $pdf->stream($nombreDocumento);
+                return $pdf->download($nombreDocumento);
             case 6:
                 $pdf = PDF::loadView('resultados_test.roshard', compact('resultado_test', 'postulante'))->setPaper('letter')->setWarnings(false);
-                return $pdf->stream($nombreDocumento);
+                return $pdf->download($nombreDocumento);
             case 12:
                 $pdf = PDF::loadView('resultados_test.ordenar-imagenes', compact('resultado_test', 'postulante'))->setPaper('letter')->setWarnings(false);
                 return $pdf->download($nombreDocumento);
