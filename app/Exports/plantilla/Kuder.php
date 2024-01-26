@@ -7,14 +7,17 @@ use Maatwebsite\Excel\Concerns\RegistersEventListeners;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\BeforeExport;
 use Maatwebsite\Excel\Excel;
+use stdClass;
 
-class Edwards implements
+class Kuder implements
 WithEvents
 {
-    private $test;
-    public function __construct($test)
+    private $resultado_test;
+    private $postulante;
+    public function __construct($resultado_test, $postulante)
     {
-        $this->test = $test;
+        $this->resultado_test = $resultado_test;
+        $this->postulante = $postulante;
     }
     use Exportable, RegistersEventListeners;
     public function registerEvents(): array
@@ -23,120 +26,270 @@ WithEvents
             // Handle by a closure.
             BeforeExport::class => function (BeforeExport $event) {
 
-                $event->writer->getProperties()->setCreator('Patrick');
-                $event->writer->reopen(new \Maatwebsite\Excel\Files\LocalTemporaryFile(storage_path() . '/plantillas/' . 'EDWARD CUESTIONARIO-SOFTWARE.xlsx'), Excel::XLSX);
-                $event->writer->getSheetByIndex(0);
-                //dd($this->proyectos);
-                // fill with information
-                $event->getWriter()->getSheetByIndex(0)->setCellValue('G3', 'ALISTIVEN');
-                /* $row = 5;
-            foreach ($this->proyectos as $i => $proyecto) {
-            $event->getWriter()->getSheetByIndex(0)->setCellValue('B' . $row, (string)$proyecto->Tas_IDT);
-            $event->getWriter()->getSheetByIndex(0)->setCellValue('C' . $row, (string)$proyecto->Nombre);
-            $row++;
-            } */
-            },
+                //$event->writer->getProperties()->setCreator('Patrick');
+                $event->writer->reopen(new \Maatwebsite\Excel\Files\LocalTemporaryFile(storage_path() . '/plantillas/' . 'KUDER.xlsx'), Excel::XLSX);
 
+                $preguntas_excel = $this->listaPreguntas();
+                //dd($preguntas_excel);
+                $event->getWriter()->getSheetByIndex(0)->setCellValue('E3', $this->postulante->nombre . ' ' . $this->postulante->apellidos);
+                $event->getWriter()->getSheetByIndex(0)->setCellValue('E5', (date('Y') - date('Y', strtotime($this->postulante->fecha_nacimiento))));
+                $event->getWriter()->getSheetByIndex(0)->setCellValue('K5', date('d/m/Y', strtotime($this->postulante->fecha_nacimiento)));
+                // fill with information
+
+                foreach ($this->resultado_test->preguntas as $key => $pregunta) {
+                    foreach ($pregunta->respuestas as $i => $respuesta) {
+                        if ($i == 0) {
+                            if ($respuesta->valor == 'Me gusta') {
+                                $event->getWriter()->getSheetByIndex(0)->setCellValue($preguntas_excel[$key]->respuesta[$i]->meGusta, '1');
+                            }
+                            if ($respuesta->valor == 'No me gusta') {
+                                $event->getWriter()->getSheetByIndex(0)->setCellValue($preguntas_excel[$key]->respuesta[$i]->noMeGusta, '1');
+                            }
+                            //dump($preguntas_excel[$key]->a, '1');
+                        }
+                        if ($i == 1) {
+                            //dump($preguntas_excel[$key]->b, '1');
+                            if ($respuesta->valor == 'Me gusta') {
+                                $event->getWriter()->getSheetByIndex(0)->setCellValue($preguntas_excel[$key]->respuesta[$i]->meGusta, '1');
+                            }
+                            if ($respuesta->valor == 'No me gusta') {
+                                $event->getWriter()->getSheetByIndex(0)->setCellValue($preguntas_excel[$key]->respuesta[$i]->noMeGusta, '1');
+                            }
+                        }
+                        if ($i == 1) {
+                            //dump($preguntas_excel[$key]->b, '1');
+                            if ($respuesta->valor == 'Me gusta') {
+                                $event->getWriter()->getSheetByIndex(0)->setCellValue($preguntas_excel[$key]->respuesta[$i]->meGusta, '1');
+                            }
+                            if ($respuesta->valor == 'No me gusta') {
+                                $event->getWriter()->getSheetByIndex(0)->setCellValue($preguntas_excel[$key]->respuesta[$i]->noMeGusta, '1');
+                            }
+                        }
+                    }
+                }
+                //dd($this->resultado_test);
+            }
         ];
     }
-    /*  public static function beforeExport(BeforeExport $event)
+    public function listaPreguntas()
     {
-    // get your template file
-    //dd(public_path() . '/plantilla/' . 'report_compare.xlsx');
-    $event->writer->reopen(new \Maatwebsite\Excel\Files\LocalTemporaryFile(public_path() . '/plantilla/' . 'report_compare.xlsx'), Excel::XLSX);
-    $event->writer->getSheetByIndex(0);
-    //dd($this->proyectos);
-    // fill with information
-    //$event->getWriter()->getSheetByIndex(0)->setCellValue('A1', 'Some Information');
-    //$event->getWriter()->getSheetByIndex(0)->setCellByColumnAndRow([1, 3],'aqui va la fecha');
-    $event->getWriter()->getSheetByIndex(0)->setCellValue('C1', date('m/d/Y'));
-    $row = 5;
-    foreach ($this->proyectos as $i => $proyecto) {
-    $event->getWriter()->getSheetByIndex(0)->setCellValue('A' . $row, $proyecto);
-    $row++;
+        $resultado = [];
+        $resultado = $this->posicionPag1($resultado);
+        $resultado = $this->posicionPag2($resultado);
+        $resultado = $this->posicionPag3($resultado);
+        $resultado = $this->posicionPag4($resultado);
+        $resultado = $this->posicionPag5($resultado);
+        $resultado = $this->posicionPag6($resultado);
+        $resultado = $this->posicionPag7($resultado);
+        $resultado = $this->posicionPag8($resultado);
+        return $resultado;
     }
-    return $event->getWriter()->getSheetByIndex(0);
-    } */
-    /* public function collection()
+    public function posicionPag1($resultado)
     {
-    $collection = collect($this->proyecto);
-    return $collection;
-    }
-    public function headings(): array
-    {
-    return [
-    'Building',
-    'Floor',
-    'Cod Area',
-    'Area',
-    'SOV Code',
-    'SOV Task',
-    'Price',
-    '% Completed',
-    '% Date Las Record',
-    'To Bill Acording % Completed',
-    ];
-    }
+        $row = 1;
+        $posicion = 8;
+        while ($row <= 104) {
+            $pregunta = new stdClass;
+            $pregunta->num = $row;
+            $aux = 1;
 
-    public function registerEvents(): array
-    {
-    return [
-    AfterSheet::class => function (AfterSheet $event) {
-    $event->sheet->setCellValue('A1', '$this->proyecto->Codigo');
-    $event->sheet->setCellValue('B1', '$this->proyecto->Nombre');
-    $event->sheet->mergeCells('B1:J1');
-    //size
-    $event->sheet->getColumnDimension('I')->setAutoSize(false);
-    $event->sheet->getColumnDimension('H')->setAutoSize(false);
-    $event->sheet->getColumnDimension('G')->setAutoSize(false);
-    $event->sheet->getColumnDimension('J')->setAutoSize(false);
+            while ($aux <= 3) {
+                $respuesta = new stdClass;
+                $respuesta->meGusta = 'B' . $posicion;
+                $respuesta->noMeGusta = 'D' . $posicion;
+                $pregunta->respuesta[] = $respuesta;
+                $aux++;
+                $posicion++;
+            }
+            $posicion++;
+            $resultado[] = $pregunta;
+            $row++;
 
-    $event->sheet->getColumnDimension('G')->setWidth(16);
-    $event->sheet->getColumnDimension('H')->setWidth(15);
-    $event->sheet->getColumnDimension('E')->setWidth(15);
-    $event->sheet->getColumnDimension('I')->setWidth(20);
-    $event->sheet->getColumnDimension('J')->setWidth(15);
-
-    $event->sheet->getStyle('A2:J2')->applyFromArray([
-    'alignment' => [
-    'wrapText' => true,
-    ],
-    ]);
-    $event->sheet->getStyle('A1:I1')->applyFromArray([
-    'font' => [
-    'bold' => true,
-    'size' => 12,
-    ],
-    'alignment' => [
-    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-    ],
-    ]);
-    $event->sheet->getStyle('A2:j2')->applyFromArray([
-    'borders' => [
-    'allBorders' => [
-    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-    'color' => ['rgb' => '030303'],
-    ],
-    ],
-    'alignment' => [
-    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-    ],
-    'fill' => [
-    'color' => array('rgb' => 'd6d6d6'),
-    ],
-    ]);
-    },
-    ];
+            if ($row >= 14) {
+                return $resultado;
+            }
+        }
     }
-    public function columnFormats(): array
+    public function posicionPag2($resultado)
     {
-    return [
-    'H' => NumberFormat::FORMAT_PERCENTAGE,
-    //'C' => NumberFormat::FORMAT_NUMBER,
-    ];
-    } */
-    public function startCell(): string
+        $row = 1;
+        $posicion = 8;
+        while ($row <= 104) {
+            $pregunta = new stdClass;
+            $pregunta->num = $row;
+            $aux = 1;
+
+            while ($aux <= 3) {
+                $respuesta = new stdClass;
+                $respuesta->meGusta = 'F' . $posicion;
+                $respuesta->noMeGusta = 'H' . $posicion;
+                $pregunta->respuesta[] = $respuesta;
+                $aux++;
+                $posicion++;
+            }
+            $posicion++;
+            $resultado[] = $pregunta;
+            $row++;
+
+            if ($row >= 14) {
+                return $resultado;
+            }
+        }
+    }
+    public function posicionPag3($resultado)
     {
-        return 'A2';
+        $row = 1;
+        $posicion = 8;
+        while ($row <= 104) {
+            $pregunta = new stdClass;
+            $pregunta->num = $row;
+            $aux = 1;
+
+            while ($aux <= 3) {
+                $respuesta = new stdClass;
+                $respuesta->meGusta = 'J' . $posicion;
+                $respuesta->noMeGusta = 'L' . $posicion;
+                $pregunta->respuesta[] = $respuesta;
+                $aux++;
+                $posicion++;
+            }
+            $posicion++;
+            $resultado[] = $pregunta;
+            $row++;
+
+            if ($row >= 14) {
+                return $resultado;
+            }
+        }
+    }
+    public function posicionPag4($resultado)
+    {
+        $row = 1;
+        $posicion = 8;
+        while ($row <= 104) {
+            $pregunta = new stdClass;
+            $pregunta->num = $row;
+            $aux = 1;
+
+            while ($aux <= 3) {
+                $respuesta = new stdClass;
+                $respuesta->meGusta = 'N' . $posicion;
+                $respuesta->noMeGusta = 'P' . $posicion;
+                $pregunta->respuesta[] = $respuesta;
+                $aux++;
+                $posicion++;
+            }
+            $posicion++;
+            $resultado[] = $pregunta;
+            $row++;
+
+            if ($row >= 14) {
+                return $resultado;
+            }
+        }
+    }
+    public function posicionPag5($resultado)
+    {
+        $row = 1;
+        $posicion = 8;
+        while ($row <= 104) {
+            $pregunta = new stdClass;
+            $pregunta->num = $row;
+            $aux = 1;
+
+            while ($aux <= 3) {
+                $respuesta = new stdClass;
+                $respuesta->meGusta = 'R' . $posicion;
+                $respuesta->noMeGusta = 'T' . $posicion;
+                $pregunta->respuesta[] = $respuesta;
+                $aux++;
+                $posicion++;
+            }
+            $posicion++;
+            $resultado[] = $pregunta;
+            $row++;
+
+            if ($row >= 14) {
+                return $resultado;
+            }
+        }
+    }
+    public function posicionPag6($resultado)
+    {
+        $row = 1;
+        $posicion = 8;
+        while ($row <= 104) {
+            $pregunta = new stdClass;
+            $pregunta->num = $row;
+            $aux = 1;
+
+            while ($aux <= 3) {
+                $respuesta = new stdClass;
+                $respuesta->meGusta = 'V' . $posicion;
+                $respuesta->noMeGusta = 'X' . $posicion;
+                $pregunta->respuesta[] = $respuesta;
+                $aux++;
+                $posicion++;
+            }
+            $posicion++;
+            $resultado[] = $pregunta;
+            $row++;
+
+            if ($row >= 14) {
+                return $resultado;
+            }
+        }
+    }
+    public function posicionPag7($resultado)
+    {
+        $row = 1;
+        $posicion = 8;
+        while ($row <= 104) {
+            $pregunta = new stdClass;
+            $pregunta->num = $row;
+            $aux = 1;
+
+            while ($aux <= 3) {
+                $respuesta = new stdClass;
+                $respuesta->meGusta = 'Z' . $posicion;
+                $respuesta->noMeGusta = 'AB' . $posicion;
+                $pregunta->respuesta[] = $respuesta;
+                $aux++;
+                $posicion++;
+            }
+            $posicion++;
+            $resultado[] = $pregunta;
+            $row++;
+
+            if ($row >= 14) {
+                return $resultado;
+            }
+        }
+    }
+    public function posicionPag8($resultado)
+    {
+        $row = 1;
+        $posicion = 8;
+        while ($row <= 104) {
+            $pregunta = new stdClass;
+            $pregunta->num = $row;
+            $aux = 1;
+
+            while ($aux <= 3) {
+                $respuesta = new stdClass;
+                $respuesta->meGusta = 'AD' . $posicion;
+                $respuesta->noMeGusta = 'AF' . $posicion;
+                $pregunta->respuesta[] = $respuesta;
+                $aux++;
+                $posicion++;
+            }
+            $posicion++;
+            $resultado[] = $pregunta;
+            $row++;
+
+            if ($row >= 14) {
+                return $resultado;
+            }
+        }
     }
 }

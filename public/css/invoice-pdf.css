@@ -101,23 +101,23 @@ table {
   border-spacing: 0;
   margin-bottom: 54px;
 }
-/* 
+
 table tr:nth-child(2n-1) td {
   background: #f5f5f5;
-} */
+}
 
 table th,
 table td {
   text-align: center;
 }
-/* 
+
 table th {
   padding: 5px 10px;
   color: #5d6975;
   border-bottom: 1px solid #c1ced9;
   white-space: nowrap;
   font-weight: normal;
-} */
+}
 
 table .service,
 table .desc {

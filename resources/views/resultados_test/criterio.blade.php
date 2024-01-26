@@ -21,20 +21,20 @@
 <body>
     <x-pdf.header />
     <x-pdf.footer />
-    <h2>Resultado Test {{ $test->nombreTest }}</h2>
+    <h2>Resultado Test {{ $resultado_test->nombreTest }}</h2>
     <div>
         <div>
-            <p style="margin: 0"><strong>Nombres: </strong>{{ $test->nombre }} {{ $test->apellidos }}</p>
+            <p style="margin: 0"><strong>Nombres: </strong>{{ $postulante->nombre }} {{ $postulante->apellidos }}</p>
         </div>
         <div>
             <p style="margin: 0"><strong>Total: </strong> </p>
         </div>
         <div>
-            <p style="margin: 0"><strong>Puesto: </strong> {{ $test->nombreCargo }}</p>
+            <p style="margin: 0"><strong>Puesto: </strong> {{ $postulante->nombreCargo }}</p>
         </div>
         <div>
             <p style="margin: 0"><strong>Fecha de evaluacion: </strong>
-                {{ date('d/m/Y H:m:s a', strtotime($test->resultados_test->fecha_inicio)) }}</p>
+                {{ date('d/m/Y H:m:s a', strtotime($resultado_test->fecha_inicio)) }}</p>
         </div>
         <table>
             <thead>
@@ -46,12 +46,12 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($preguntas as $i =>  $pregunta)
+                @forelse ($resultado_test->preguntas as $i =>  $pregunta)
                     <tr>
                         <td class="desc">
                             <p><Strong>{{ $i + 1 }}. {{ $pregunta->pregunta_nombre }}</Strong></p>
                             @forelse ($pregunta->respuestas as $key => $respuesta)
-                                <p> {{ $respuesta->resultados_respuesta->descripcion }}</p>
+                                <p> {{ $respuesta->descripcion }}</p>
                             @empty
                                 <p>
                                     <br>

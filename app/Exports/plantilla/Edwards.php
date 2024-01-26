@@ -7,14 +7,17 @@ use Maatwebsite\Excel\Concerns\RegistersEventListeners;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\BeforeExport;
 use Maatwebsite\Excel\Excel;
+use stdClass;
 
 class Edwards implements
 WithEvents
 {
-    private $tests;
-    public function __construct($tests)
+    private $resultado_test;
+    private $postulante;
+    public function __construct($resultado_test, $postulante)
     {
-        $this->tests = $tests;
+        $this->resultado_test = $resultado_test;
+        $this->postulante = $postulante;
     }
     use Exportable, RegistersEventListeners;
     public function registerEvents(): array
@@ -26,139 +29,122 @@ WithEvents
                 //$event->writer->getProperties()->setCreator('Patrick');
                 $event->writer->reopen(new \Maatwebsite\Excel\Files\LocalTemporaryFile(storage_path() . '/plantillas/' . 'EDWARD CUESTIONARIO-SOFTWARE.xlsx'), Excel::XLSX);
                 $event->writer->getSheetByIndex(0);
-                //dd($this->proyectos);
+                //dd($this->resultado_test,$this->postulante);
+                $event->getWriter()->getSheetByIndex(0)->setCellValue('G3', $this->postulante->nombre.' '.$this->postulante->apellidos);
+                $event->getWriter()->getSheetByIndex(0)->setCellValue('AC3', (date('Y')-date('Y', strtotime($this->postulante->fecha_nacimiento))));
+                $event->getWriter()->getSheetByIndex(0)->setCellValue('AU3', date('d/m/Y', strtotime($this->postulante->fecha_nacimiento)));
                 // fill with information
-                $event->getWriter()->getSheetByIndex(0)->setCellValue('G3', 'ALISTIVEN');
-                $row = 8;
-                $this->tests = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-                $grupo = 1;
-                foreach ($this->tests as $i => $test) {
-                    switch ($grupo) {
-                        case 1:
-                            $event->getWriter()->getSheetByIndex(0)->setCellValue('A' . $row, '1');
-                            $event->getWriter()->getSheetByIndex(0)->setCellValue('C' . $row, '');
-                            break;
-                        case 2:
-                            $event->getWriter()->getSheetByIndex(0)->setCellValue('E' . $row, '1');
-                            $event->getWriter()->getSheetByIndex(0)->setCellValue('G' . $row, '');
-                            break;
-                        case 3:
-                            $event->getWriter()->getSheetByIndex(0)->setCellValue('M' . $row, '1');
-                            $event->getWriter()->getSheetByIndex(0)->setCellValue('O' . $row, '1');
-                            break;
-                        default:
-                            # code...
-                            break;
-                    }
-                    $row++;
-                    if ($i / 5 == 1) {
-                        //dd($i / 5 );
-                        $row = 8;
-                        $grupo++;
+                $preguntas_excel = $this->listaPreguntas();
+                foreach ($this->resultado_test->preguntas as $key => $pregunta) {
+                    foreach ($pregunta->respuestas as $i => $respuesta) {
+                        if ($i == 0) {
+                            if ($respuesta->valor == '1') {
+                                $event->getWriter()->getSheetByIndex(0)->setCellValue($preguntas_excel[$key]->a, '1');
+                            }
+                            //dump($preguntas_excel[$key]->a, '1');
+
+                        }
+                        if ($i == 1) {
+                            //dump($preguntas_excel[$key]->b, '1');
+                            if ($respuesta->valor == '1') {
+                                $event->getWriter()->getSheetByIndex(0)->setCellValue($preguntas_excel[$key]->b, '1');
+                            }
+                        }
                     }
                 }
+                //dd($this->resultado_test);
+
             },
 
         ];
     }
-    /*  public static function beforeExport(BeforeExport $event)
+    public function listaPreguntas()
     {
-    // get your template file
-    //dd(public_path() . '/plantilla/' . 'report_compare.xlsx');
-    $event->writer->reopen(new \Maatwebsite\Excel\Files\LocalTemporaryFile(public_path() . '/plantilla/' . 'report_compare.xlsx'), Excel::XLSX);
-    $event->writer->getSheetByIndex(0);
-    //dd($this->proyectos);
-    // fill with information
-    //$event->getWriter()->getSheetByIndex(0)->setCellValue('A1', 'Some Information');
-    //$event->getWriter()->getSheetByIndex(0)->setCellByColumnAndRow([1, 3],'aqui va la fecha');
-    $event->getWriter()->getSheetByIndex(0)->setCellValue('C1', date('m/d/Y'));
-    $row = 5;
-    foreach ($this->proyectos as $i => $proyecto) {
-    $event->getWriter()->getSheetByIndex(0)->setCellValue('A' . $row, $proyecto);
-    $row++;
-    }
-    return $event->getWriter()->getSheetByIndex(0);
-    } */
-    /* public function collection()
-    {
-    $collection = collect($this->proyecto);
-    return $collection;
-    }
-    public function headings(): array
-    {
-    return [
-    'Building',
-    'Floor',
-    'Cod Area',
-    'Area',
-    'SOV Code',
-    'SOV Task',
-    'Price',
-    '% Completed',
-    '% Date Las Record',
-    'To Bill Acording % Completed',
-    ];
-    }
+        //columna
+        $columnas = [
+            array('A', 'C'),
+            array('E', 'G'),
+            array('I', 'K'),
+            array('M', 'O'),
+            array('Q', 'S'),
+            array('U', 'W'),
+            array('Y', 'AA'),
+            array('AC', 'AE'),
+            array('AG', 'AI'),
+            array('AK', 'AM'),
+            array('AO', 'AQ'),
+            array('AS', 'AU'),
+            array('AW', 'AY'),
+            array('BA', 'BC'),
+            array('BE', 'BG'),
+        ];
 
-    public function registerEvents(): array
-    {
-    return [
-    AfterSheet::class => function (AfterSheet $event) {
-    $event->sheet->setCellValue('A1', '$this->proyecto->Codigo');
-    $event->sheet->setCellValue('B1', '$this->proyecto->Nombre');
-    $event->sheet->mergeCells('B1:J1');
-    //size
-    $event->sheet->getColumnDimension('I')->setAutoSize(false);
-    $event->sheet->getColumnDimension('H')->setAutoSize(false);
-    $event->sheet->getColumnDimension('G')->setAutoSize(false);
-    $event->sheet->getColumnDimension('J')->setAutoSize(false);
+        //dd($columnas);
+        $resultado = [];
+        $resultado = $this->pregunta75($columnas, $resultado);
+        $resultado = $this->pregunta150($columnas, $resultado);
+        $resultado = $this->pregunta225($columnas, $resultado);
 
-    $event->sheet->getColumnDimension('G')->setWidth(16);
-    $event->sheet->getColumnDimension('H')->setWidth(15);
-    $event->sheet->getColumnDimension('E')->setWidth(15);
-    $event->sheet->getColumnDimension('I')->setWidth(20);
-    $event->sheet->getColumnDimension('J')->setWidth(15);
-
-    $event->sheet->getStyle('A2:J2')->applyFromArray([
-    'alignment' => [
-    'wrapText' => true,
-    ],
-    ]);
-    $event->sheet->getStyle('A1:I1')->applyFromArray([
-    'font' => [
-    'bold' => true,
-    'size' => 12,
-    ],
-    'alignment' => [
-    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-    ],
-    ]);
-    $event->sheet->getStyle('A2:j2')->applyFromArray([
-    'borders' => [
-    'allBorders' => [
-    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-    'color' => ['rgb' => '030303'],
-    ],
-    ],
-    'alignment' => [
-    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-    ],
-    'fill' => [
-    'color' => array('rgb' => 'd6d6d6'),
-    ],
-    ]);
-    },
-    ];
+        return $resultado;
     }
-    public function columnFormats(): array
+    public function pregunta75($columnas, $resultado)
     {
-    return [
-    'H' => NumberFormat::FORMAT_PERCENTAGE,
-    //'C' => NumberFormat::FORMAT_NUMBER,
-    ];
-    } */
-    public function startCell(): string
+        $fila = 1;
+        while ($fila <= 5) {
+            foreach ($columnas as $key => $columna) {
+                $row = 8;
+                while ($row <= 12) {
+                    $posisiones = new stdClass;
+                    $posisiones->a = $columna[0] . $row;
+                    $posisiones->b = $columna[1] . $row;
+                    $resultado[] = $posisiones;
+                    $row++;
+                }
+                if ($key >= 14) {
+                    return $resultado;
+                }
+            }
+            $fila++;
+        }
+    }
+    public function pregunta150($columnas, $resultado)
     {
-        return 'A2';
+        $fila = 1;
+        while ($fila <= 5) {
+            foreach ($columnas as $key => $columna) {
+                $row = 16;
+                while ($row <= 20) {
+                    $posisiones = new stdClass;
+                    $posisiones->a = $columna[0] . $row;
+                    $posisiones->b = $columna[1] . $row;
+                    $resultado[] = $posisiones;
+                    $row++;
+                }
+                if ($key >= 14) {
+                    return $resultado;
+                }
+            }
+            $fila++;
+        }
+    }
+    public function pregunta225($columnas, $resultado)
+    {
+        $fila = 1;
+        while ($fila <= 5) {
+            foreach ($columnas as $key => $columna) {
+                $row = 24;
+                while ($row <= 28) {
+                    $posisiones = new stdClass;
+                    $posisiones->a = $columna[0] . $row;
+                    $posisiones->b = $columna[1] . $row;
+                    $resultado[] = $posisiones;
+                    $row++;
+                }
+                if ($key >= 14) {
+                    return $resultado;
+                }
+            }
+            $fila++;
+        }
     }
 }
