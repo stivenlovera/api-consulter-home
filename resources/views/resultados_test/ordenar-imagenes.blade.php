@@ -39,22 +39,30 @@
         <table>
             <thead>
                 <tr>
-                    <th colspan="1" width="50" style="font-size: 15px;"></th>
+                    
                 </tr>
             </thead>
             <tbody>
                 @forelse ($resultado_test->preguntas as $i =>  $pregunta)
                     <tr>
-                        <td class="desc">
+                        <td class="desc" colspan="{{ count($pregunta->respuestas) }}">
                             <p><strong>{{ $i + 1 }}. {{ $pregunta->pregunta_nombre }}</Strong></p>
                         </td>
                     </tr>
                     <tr>
-                        {{-- {{dd('')}} --}}
-                        <td class="desc">
-                            Orden : 
+                        @forelse ($pregunta->respuestas as $key => $respuesta)
+                            <td class="desc">
+                                <img src='{{ public_path('assets/respuestas/' . $respuesta->imagen . '') }}'
+                                    style="display:block; width: 70%; height:auto border-color: #1976d2; border-style: solid;">
+                            </td>
+                        @empty
+                        @endforelse
+                    </tr>
+                    <tr>
+                        <td class="desc" colspan="{{ count($pregunta->respuestas)  }}">
+                            Orden :
                             @forelse ($pregunta->respuestas as $key => $respuesta)
-                               {{ $respuesta->descripcion }}
+                                {{ $respuesta->descripcion }}
                             @empty
                             @endforelse
                         </td>
